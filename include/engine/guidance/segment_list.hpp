@@ -42,6 +42,7 @@ template <typename DataFacadeT> class SegmentList
     std::uint32_t GetDuration() const;
 
     const std::vector<SegmentInformation> &Get() const;
+    std::vector<SegmentInformation> &Get();
 
   private:
     void InitRoute(const PhantomNode &phantom_node, const bool traversed_in_reverse);

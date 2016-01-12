@@ -76,7 +76,7 @@ inline util::json::Array AnnotateRoute(const std::vector<SegmentInformation> &ro
                 }
                 json_instruction_row.values.emplace_back(std::move(current_turn_instruction));
 
-                json_instruction_row.values.push_back(facade->get_name_for_id(segment.name_id));
+                json_instruction_row.values.push_back(facade->GetNameForId(segment.name_id));
                 json_instruction_row.values.push_back(std::round(segment.length));
                 json_instruction_row.values.push_back(necessary_segments_running_index);
                 json_instruction_row.values.push_back(std::round(segment.duration / 10.));

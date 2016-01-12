@@ -1,8 +1,9 @@
 #ifndef ENGINE_GUIDANCE_API_RESPONSE_GENERATOR_HPP_
 #define ENGINE_GUIDANCE_API_RESPONSE_GENERATOR_HPP_
 
-#include "guidance/segment_list.hpp"
-#include "guidance/textual_route_annotation.hpp"
+#include "engine/guidance/segment_list.hpp"
+#include "engine/guidance/textual_route_annotation.hpp"
+#include "engine/guidance/segment_compression.hpp"
 
 #include "engine/internal_route_result.hpp"
 #include "engine/object_encoder.hpp"
@@ -114,6 +115,7 @@ void ApiResponseGenerator<DataFacadeT>::DescribeRoute(const RouteParameters &con
 
     if (config.print_instructions)
     {
+        guidance::CombineSimilarSegments( segment_list.Get(), facade );
         json_result.values["route_instructions"] =
             guidance::AnnotateRoute(segment_list.Get(), facade);
     }
@@ -190,10 +192,10 @@ ApiResponseGenerator<DataFacadeT>::SummarizeRoute(const InternalRouteResult &raw
     if (!raw_route.segment_end_coordinates.empty())
     {
         const auto start_name_id = raw_route.segment_end_coordinates.front().source_phantom.name_id;
-        json_route_summary.values["start_point"] = facade->get_name_for_id(start_name_id);
+        json_route_summary.values["start_point"] = facade->GetNameForId(start_name_id);
         const auto destination_name_id =
             raw_route.segment_end_coordinates.back().target_phantom.name_id;
-        json_route_summary.values["end_point"] = facade->get_name_for_id(destination_name_id);
+        json_route_summary.values["end_point"] = facade->GetNameForId(destination_name_id);
     }
     json_route_summary.values["total_time"] = segment_list.GetDuration();
     json_route_summary.values["total_distance"] = segment_list.GetDistance();

@@ -76,7 +76,7 @@ template <class DataFacadeT> class NearestPlugin final : public BasePlugin
                     json_coordinate.values.push_back(node.location.lat / COORDINATE_PRECISION);
                     json_coordinate.values.push_back(node.location.lon / COORDINATE_PRECISION);
                     result.values["mapped coordinate"] = json_coordinate;
-                    result.values["name"] = facade->get_name_for_id(node.name_id);
+                    result.values["name"] = facade->GetNameForId(node.name_id);
                     results.values.push_back(result);
                 }
                 json_result.values["results"] = results;
@@ -90,7 +90,7 @@ template <class DataFacadeT> class NearestPlugin final : public BasePlugin
                     phantom_node_vector.front().phantom_node.location.lon / COORDINATE_PRECISION);
                 json_result.values["mapped_coordinate"] = json_coordinate;
                 json_result.values["name"] =
-                    facade->get_name_for_id(phantom_node_vector.front().phantom_node.name_id);
+                    facade->GetNameForId(phantom_node_vector.front().phantom_node.name_id);
             }
         }
         return Status::Ok;

@@ -246,7 +246,7 @@ template <class DataFacadeT> class MapMatchingPlugin : public BasePlugin
         util::json::Array names;
         for (const auto &node : sub.nodes)
         {
-            names.values.emplace_back(facade->get_name_for_id(node.name_id));
+            names.values.emplace_back(facade->GetNameForId(node.name_id));
         }
         subtrace.values["matched_names"] = names;
 
