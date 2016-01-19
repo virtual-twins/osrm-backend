@@ -2,9 +2,9 @@
 Feature: Name Changes
 
     Background:
-        Given the profile "guidance"
+        Given the profile "testbot"
 
-    Scenario: Different Names
+    Scenario: Different Names -- Long in the middle
         Given the node map
             | a | b | c | d |
 
@@ -16,4 +16,18 @@ Feature: Name Changes
 
         When I route I should get
             | waypoints | route   | turns |
-            | a,d     | ab,bc,cd | head, destination
+            | a,d     | I42 | head,destination |
+
+    Scenario: Different Names -- Long in the middle
+        Given the node map
+            | a | b | c | d |
+
+        And the ways
+            | nodes | name |
+            | ab   | Street Name (I42) |
+            | bc | I42 |
+            | cd | Other Street Name (I42) |
+
+        When I route I should get
+            | waypoints | route   | turns |
+            | a,d     | I42 | head,destination |
