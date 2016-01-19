@@ -20,6 +20,7 @@ struct PhantomNode
     PhantomNode(NodeID forward_node_id,
                 NodeID reverse_node_id,
                 unsigned name_id,
+                unsigned reverse_name_id,
                 int forward_weight,
                 int reverse_weight,
                 int forward_offset,
@@ -32,20 +33,23 @@ struct PhantomNode
                 extractor::TravelMode forward_travel_mode,
                 extractor::TravelMode backward_travel_mode)
         : forward_node_id(forward_node_id), reverse_node_id(reverse_node_id), name_id(name_id),
-          forward_weight(forward_weight), reverse_weight(reverse_weight),
-          forward_offset(forward_offset), reverse_offset(reverse_offset),
-          packed_geometry_id(packed_geometry_id), component{component_id, is_tiny_component},
-          location(std::move(location)), fwd_segment_position(fwd_segment_position),
-          forward_travel_mode(forward_travel_mode), backward_travel_mode(backward_travel_mode)
+          reverse_name_id(reverse_name_id), forward_weight(forward_weight),
+          reverse_weight(reverse_weight), forward_offset(forward_offset),
+          reverse_offset(reverse_offset), packed_geometry_id(packed_geometry_id),
+          component{component_id, is_tiny_component}, location(location),
+          fwd_segment_position(fwd_segment_position), forward_travel_mode(forward_travel_mode),
+          backward_travel_mode(backward_travel_mode)
     {
     }
 
     PhantomNode()
         : forward_node_id(SPECIAL_NODEID), reverse_node_id(SPECIAL_NODEID),
-          name_id(std::numeric_limits<unsigned>::max()), forward_weight(INVALID_EDGE_WEIGHT),
-          reverse_weight(INVALID_EDGE_WEIGHT), forward_offset(0), reverse_offset(0),
-          packed_geometry_id(SPECIAL_EDGEID), component{INVALID_COMPONENTID, false},
-          fwd_segment_position(0), forward_travel_mode(TRAVEL_MODE_INACCESSIBLE),
+          name_id(std::numeric_limits<unsigned>::max()),
+          reverse_name_id(std::numeric_limits<unsigned>::max()),
+          forward_weight(INVALID_EDGE_WEIGHT), reverse_weight(INVALID_EDGE_WEIGHT),
+          forward_offset(0), reverse_offset(0), packed_geometry_id(SPECIAL_EDGEID),
+          component{INVALID_COMPONENTID, false}, fwd_segment_position(0),
+          forward_travel_mode(TRAVEL_MODE_INACCESSIBLE),
           backward_travel_mode(TRAVEL_MODE_INACCESSIBLE)
     {
     }
@@ -81,10 +85,15 @@ struct PhantomNode
                ((forward_node_id < number_of_nodes) || (reverse_node_id < number_of_nodes)) &&
                ((forward_weight != INVALID_EDGE_WEIGHT) ||
                 (reverse_weight != INVALID_EDGE_WEIGHT)) &&
-               (component.id != INVALID_COMPONENTID) && (name_id != INVALID_NAMEID);
+               (component.id != INVALID_COMPONENTID) && (name_id != INVALID_NAMEID) &&
+               (reverse_name_id != INVALID_NAMEID);
     }
 
-    bool IsValid() const { return location.IsValid() && (name_id != INVALID_NAMEID); }
+    bool IsValid() const
+    {
+        return location.IsValid() && (name_id != INVALID_NAMEID) &&
+               (reverse_node_id == SPECIAL_NODEID || reverse_name_id != INVALID_NAMEID);
+    }
 
     bool operator==(const PhantomNode &other) const { return location == other.location; }
 
@@ -94,6 +103,7 @@ struct PhantomNode
         forward_node_id = other.forward_edge_based_node_id;
         reverse_node_id = other.reverse_edge_based_node_id;
         name_id = other.name_id;
+        reverse_name_id = other.reverse_name_id;
 
         forward_weight = other.forward_weight;
         reverse_weight = other.reverse_weight;
@@ -116,6 +126,7 @@ struct PhantomNode
     NodeID forward_node_id;
     NodeID reverse_node_id;
     unsigned name_id;
+    unsigned reverse_name_id;
     int forward_weight;
     int reverse_weight;
     int forward_offset;
@@ -139,7 +150,7 @@ struct PhantomNode
 };
 
 #ifndef _MSC_VER
-static_assert(sizeof(PhantomNode) == 48, "PhantomNode has more padding then expected");
+static_assert(sizeof(PhantomNode) == 52, "PhantomNode has more padding then expected");
 #endif
 
 using PhantomNodePair = std::pair<PhantomNode, PhantomNode>;
@@ -168,6 +179,7 @@ inline std::ostream &operator<<(std::ostream &out, const PhantomNode &pn)
     out << "node1: " << pn.forward_node_id << ", "
         << "node2: " << pn.reverse_node_id << ", "
         << "name: " << pn.name_id << ", "
+        << "Rev-name: " << pn.reverse_name_id << ", "
         << "fwd-w: " << pn.forward_weight << ", "
         << "rev-w: " << pn.reverse_weight << ", "
         << "fwd-o: " << pn.forward_offset << ", "
