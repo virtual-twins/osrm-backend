@@ -54,7 +54,7 @@ bool AnalyseTurnsOptions::ParseArguments(int argc, char *argv[])
     // hidden options, will be allowed both on command line and in config file, but will not be
     // shown to the user
     boost::program_options::options_description hidden_options("Hidden Options");
-    hidden_options.add_options()("input,i", boost::program_options::value<std::string>(&input_file),
+    hidden_options.add_options()("input,i", boost::program_options::value<std::string>(&graph_file),
                                  "Path to input file in .osrm format");
 
     // positional option
@@ -94,6 +94,8 @@ bool AnalyseTurnsOptions::ParseArguments(int argc, char *argv[])
         util::SimpleLogger().Write(logWARNING) << e.what();
         return false;
     }
+
+    restriction_file = graph_file + ".restrictions";
 
     return true;
 }

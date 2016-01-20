@@ -36,7 +36,9 @@ struct AnalyseTurnsOptions
 {
     bool ParseArguments(int argc, char *argv[]);
 
-    std::string input_file;
+    std::string graph_file;
+    std::string restriction_file;
+
     std::uint8_t neighbourhood_size;
     float length_grouping_base;
     std::uint8_t classification_type_uint8;
