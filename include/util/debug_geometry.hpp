@@ -2,8 +2,8 @@
 #define DEBUG_GEOMETRY_H
 
 #include "contractor/contractor_config.hpp"
-#include "extractor/query_node.hpp"
 #include "osrm/coordinate.hpp"
+#include "graph/query_node.hpp"
 
 #ifndef DEBUG_GEOMETRY
 
@@ -30,12 +30,12 @@ inline void DEBUG_TURN(const NodeID /* node */,
 {
 }
 inline void DEBUG_UTURN(const NodeID /* node */,
-                        const std::vector<extractor::QueryNode> & /* m_node_info_list */,
+                        const std::vector<graph::QueryNode> & /* m_node_info_list */,
                         const int /* uturn_penalty */)
 {
 }
 inline void DEBUG_SIGNAL(const NodeID /* node */,
-                         const std::vector<extractor::QueryNode> & /* m_node_info_list */,
+                         const std::vector<graph::QueryNode> & /* m_node_info_list */,
                          const int /* signal_penalty */)
 {
 }

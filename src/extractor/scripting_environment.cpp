@@ -4,7 +4,7 @@
 #include "extractor/extraction_node.hpp"
 #include "extractor/extraction_way.hpp"
 #include "extractor/internal_extractor_edge.hpp"
-#include "extractor/external_memory_node.hpp"
+#include "graph/external_memory_node.hpp"
 #include "extractor/raster_source.hpp"
 #include "util/lua_util.hpp"
 #include "util/osrm_exception.hpp"
@@ -112,9 +112,9 @@ void ScriptingEnvironment::InitLuaState(lua_State *lua_state)
              .property("weight_data", &InternalExtractorEdge::weight_data),
          luabind::class_<InternalExtractorEdge::WeightData>("WeightData")
              .def_readwrite("speed", &InternalExtractorEdge::WeightData::speed),
-         luabind::class_<ExternalMemoryNode>("EdgeTarget")
-             .property("lat", &ExternalMemoryNode::lat)
-             .property("lon", &ExternalMemoryNode::lon),
+         luabind::class_<graph::ExternalMemoryNode>("EdgeTarget")
+             .property("lat", &graph::ExternalMemoryNode::lat)
+             .property("lon", &graph::ExternalMemoryNode::lon),
          luabind::class_<util::FixedPointCoordinate>("Coordinate")
              .property("lat", &util::FixedPointCoordinate::lat)
              .property("lon", &util::FixedPointCoordinate::lon),

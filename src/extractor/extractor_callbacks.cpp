@@ -3,8 +3,6 @@
 #include "extractor/extraction_node.hpp"
 #include "extractor/extraction_way.hpp"
 
-#include "extractor/external_memory_node.hpp"
-#include "extractor/restriction.hpp"
 #include "util/simple_logger.hpp"
 #include "util/for_each_pair.hpp"
 
@@ -45,7 +43,7 @@ void ExtractorCallbacks::ProcessNode(const osmium::Node &input_node,
 }
 
 void ExtractorCallbacks::ProcessRestriction(
-    const boost::optional<InputRestrictionContainer> &restriction)
+    const boost::optional<graph::InputRestrictionContainer> &restriction)
 {
     if (restriction)
     {
@@ -95,7 +93,7 @@ void ExtractorCallbacks::ProcessWay(const osmium::Way &input_way, const Extracti
     if (0 < parsed_way.duration)
     {
         const unsigned num_edges = (input_way.nodes().size() - 1);
-        // FIXME We devide by the numer of nodes here, but should rather consider
+        // FIXME We divide by the numer of nodes here, but should rather consider
         // the length of each segment. We would eigther have to compute the length
         // of the whole way here (we can't: no node coordinates) or push that back
         // to the container and keep a reference to the way.

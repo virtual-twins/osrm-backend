@@ -1,16 +1,16 @@
 #ifndef EXTERNAL_MEMORY_NODE_HPP_
 #define EXTERNAL_MEMORY_NODE_HPP_
 
-#include "extractor/query_node.hpp"
+#include "graph/query_node.hpp"
 
 #include "util/typedefs.hpp"
 
 namespace osrm
 {
-namespace extractor
+namespace graph
 {
 
-struct ExternalMemoryNode : QueryNode
+struct ExternalMemoryNode : graph::QueryNode
 {
     ExternalMemoryNode(int lat, int lon, OSMNodeID node_id, bool barrier, bool traffic_lights)
         : QueryNode(lat, lon, node_id), barrier(barrier), traffic_lights(traffic_lights)
@@ -44,7 +44,8 @@ struct ExternalMemoryNodeSTXXLCompare
         return left.node_id < right.node_id;
     }
 };
-}
-}
+
+} // namespace graph
+} // namespace osrm
 
 #endif /* EXTERNAL_MEMORY_NODE_HPP_ */

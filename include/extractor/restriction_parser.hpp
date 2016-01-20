@@ -1,7 +1,7 @@
 #ifndef RESTRICTION_PARSER_HPP
 #define RESTRICTION_PARSER_HPP
 
-#include "extractor/restriction.hpp"
+#include "graph/turn_restriction.hpp"
 
 #include <boost/optional/optional.hpp>
 
@@ -41,7 +41,7 @@ class RestrictionParser
 {
   public:
     RestrictionParser(lua_State *lua_state);
-    boost::optional<InputRestrictionContainer> TryParse(const osmium::Relation &relation) const;
+    boost::optional<graph::InputRestrictionContainer> TryParse(const osmium::Relation &relation) const;
 
   private:
     void ReadUseRestrictionsSetting(lua_State *lua_state);

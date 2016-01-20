@@ -4,7 +4,6 @@
 // Exposes all data access interfaces to the algorithms via base class ptr
 
 #include "extractor/edge_based_node.hpp"
-#include "extractor/external_memory_node.hpp"
 #include "engine/phantom_node.hpp"
 #include "extractor/turn_instructions.hpp"
 #include "util/integer_range.hpp"

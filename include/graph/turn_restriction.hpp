@@ -7,7 +7,7 @@
 
 namespace osrm
 {
-namespace extractor
+namespace graph
 {
 
 struct TurnRestriction
@@ -108,7 +108,8 @@ struct CmpRestrictionContainerByTo
     value_type max_value() const { return InputRestrictionContainer::max_value(); }
     value_type min_value() const { return InputRestrictionContainer::min_value(); }
 };
-}
-}
+
+} // namespace graph
+} // namespace osrm
 
 #endif // RESTRICTION_HPP

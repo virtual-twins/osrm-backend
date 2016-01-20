@@ -1,7 +1,6 @@
 #include "extractor/original_edge_data.hpp"
 #include "util/range_table.hpp"
 #include "contractor/query_edge.hpp"
-#include "extractor/query_node.hpp"
 #include "util/shared_memory_vector_wrapper.hpp"
 #include "util/static_graph.hpp"
 #include "util/static_rtree.hpp"
@@ -464,10 +463,10 @@ int Storage::Run()
         shared_layout_ptr->GetBlockPtr<util::FixedPointCoordinate, true>(
             shared_memory_ptr, SharedDataLayout::COORDINATE_LIST);
 
-    extractor::QueryNode current_node;
+    graph::QueryNode current_node;
     for (unsigned i = 0; i < coordinate_list_size; ++i)
     {
-        nodes_input_stream.read((char *)&current_node, sizeof(extractor::QueryNode));
+        nodes_input_stream.read((char *)&current_node, sizeof(graph::QueryNode));
         coordinates_ptr[i] = util::FixedPointCoordinate(current_node.lat, current_node.lon);
     }
     nodes_input_stream.close();

@@ -1,7 +1,6 @@
 #include "extractor/graph_compressor.hpp"
 
 #include "extractor/compressed_edge_container.hpp"
-#include "extractor/restriction_map.hpp"
 #include "util/dynamic_graph.hpp"
 #include "util/node_based_graph.hpp"
 #include "util/percent.hpp"
@@ -20,7 +19,7 @@ GraphCompressor::GraphCompressor(SpeedProfileProperties speed_profile)
 
 void GraphCompressor::Compress(const std::unordered_set<NodeID> &barrier_nodes,
                                const std::unordered_set<NodeID> &traffic_lights,
-                               RestrictionMap &restriction_map,
+                               graph::RestrictionMap &restriction_map,
                                util::NodeBasedDynamicGraph &graph,
                                CompressedEdgeContainer &geometry_compressor)
 {

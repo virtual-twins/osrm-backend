@@ -21,7 +21,7 @@
 #include "util/static_graph.hpp"
 #include "util/static_rtree.hpp"
 #include "extractor/compressed_edge_container.hpp"
-#include "extractor/restriction_map.hpp"
+#include "graph/restriction_map.hpp"
 
 #include "extractor/tarjan_scc.hpp"
 
@@ -47,6 +47,8 @@
 #include <unordered_map>
 #include <vector>
 #include <bitset>
+
+#include "io/node_based_graph.hpp"
 
 namespace osrm
 {
@@ -139,7 +141,8 @@ int Extractor::run()
         // initialize vectors holding parsed objects
         tbb::concurrent_vector<std::pair<std::size_t, ExtractionNode>> resulting_nodes;
         tbb::concurrent_vector<std::pair<std::size_t, ExtractionWay>> resulting_ways;
-        tbb::concurrent_vector<boost::optional<InputRestrictionContainer>> resulting_restrictions;
+        tbb::concurrent_vector<boost::optional<graph::InputRestrictionContainer>>
+            resulting_restrictions;
 
         // setup restriction parser
         const RestrictionParser restriction_parser(scripting_environment.GetLuaState());
@@ -267,7 +270,7 @@ int Extractor::run()
         util::DeallocatingVector<EdgeBasedEdge> edge_based_edge_list;
         std::vector<bool> node_is_startpoint;
         std::vector<EdgeWeight> edge_based_node_weights;
-        std::vector<QueryNode> internal_to_external_node_map;
+        std::vector<graph::QueryNode> internal_to_external_node_map;
         auto graph_size = BuildEdgeExpandedGraph(internal_to_external_node_map,
                                                  node_based_edge_list, node_is_startpoint,
                                                  edge_based_node_weights, edge_based_edge_list);
@@ -279,8 +282,7 @@ int Extractor::run()
 
         util::SimpleLogger().Write() << "Saving edge-based node weights to file.";
         TIMER_START(timer_write_node_weights);
-        util::serializeVector(config.edge_based_node_weights_output_path,
-                                  edge_based_node_weights);
+        util::serializeVector(config.edge_based_node_weights_output_path, edge_based_node_weights);
         TIMER_STOP(timer_write_node_weights);
         util::SimpleLogger().Write() << "Done writing. (" << TIMER_SEC(timer_write_node_weights)
                                      << ")";
@@ -433,67 +435,10 @@ void Extractor::FindComponents(unsigned max_edge_id,
 }
 
 /**
-  \brief Build load restrictions from .restriction file
-  */
-std::shared_ptr<RestrictionMap> Extractor::LoadRestrictionMap()
-{
-    boost::filesystem::ifstream input_stream(config.restriction_file_name,
-                                             std::ios::in | std::ios::binary);
-
-    std::vector<TurnRestriction> restriction_list;
-    util::loadRestrictionsFromFile(input_stream, restriction_list);
-
-    util::SimpleLogger().Write() << " - " << restriction_list.size() << " restrictions.";
-
-    return std::make_shared<RestrictionMap>(restriction_list);
-}
-
-/**
-  \brief Load node based graph from .osrm file
-  */
-std::shared_ptr<util::NodeBasedDynamicGraph>
-Extractor::LoadNodeBasedGraph(std::unordered_set<NodeID> &barrier_nodes,
-                              std::unordered_set<NodeID> &traffic_lights,
-                              std::vector<QueryNode> &internal_to_external_node_map)
-{
-    std::vector<NodeBasedEdge> edge_list;
-
-    boost::filesystem::ifstream input_stream(config.output_file_name,
-                                             std::ios::in | std::ios::binary);
-
-    std::vector<NodeID> barrier_list;
-    std::vector<NodeID> traffic_light_list;
-    NodeID number_of_node_based_nodes = util::loadNodesFromFile(
-        input_stream, barrier_list, traffic_light_list, internal_to_external_node_map);
-
-    util::SimpleLogger().Write() << " - " << barrier_list.size() << " bollard nodes, "
-                                 << traffic_light_list.size() << " traffic lights";
-
-    // insert into unordered sets for fast lookup
-    barrier_nodes.insert(barrier_list.begin(), barrier_list.end());
-    traffic_lights.insert(traffic_light_list.begin(), traffic_light_list.end());
-
-    barrier_list.clear();
-    barrier_list.shrink_to_fit();
-    traffic_light_list.clear();
-    traffic_light_list.shrink_to_fit();
-
-    util::loadEdgesFromFile(input_stream, edge_list);
-
-    if (edge_list.empty())
-    {
-        util::SimpleLogger().Write(logWARNING) << "The input data is empty, exiting.";
-        return std::shared_ptr<util::NodeBasedDynamicGraph>();
-    }
-
-    return util::NodeBasedDynamicGraphFromEdges(number_of_node_based_nodes, edge_list);
-}
-
-/**
  \brief Building an edge-expanded graph from node-based input and turn restrictions
 */
 std::pair<std::size_t, std::size_t>
-Extractor::BuildEdgeExpandedGraph(std::vector<QueryNode> &internal_to_external_node_map,
+Extractor::BuildEdgeExpandedGraph(std::vector<graph::QueryNode> &internal_to_external_node_map,
                                   std::vector<EdgeBasedNode> &node_based_edge_list,
                                   std::vector<bool> &node_is_startpoint,
                                   std::vector<EdgeWeight> &edge_based_node_weights,
@@ -508,9 +453,9 @@ Extractor::BuildEdgeExpandedGraph(std::vector<QueryNode> &internal_to_external_n
     std::unordered_set<NodeID> barrier_nodes;
     std::unordered_set<NodeID> traffic_lights;
 
-    auto restriction_map = LoadRestrictionMap();
-    auto node_based_graph =
-        LoadNodeBasedGraph(barrier_nodes, traffic_lights, internal_to_external_node_map);
+    auto restriction_map = io::loadRestrictionMap(config.restriction_file_name);
+    auto node_based_graph = io::loadNodeBasedGraph(config.output_file_name, barrier_nodes,
+                                                   traffic_lights, internal_to_external_node_map);
 
     CompressedEdgeContainer compressed_edge_container;
     GraphCompressor graph_compressor(speed_profile);
@@ -519,7 +464,7 @@ Extractor::BuildEdgeExpandedGraph(std::vector<QueryNode> &internal_to_external_n
 
     EdgeBasedGraphFactory edge_based_graph_factory(
         node_based_graph, compressed_edge_container, barrier_nodes, traffic_lights,
-        std::const_pointer_cast<RestrictionMap const>(restriction_map),
+        std::const_pointer_cast<graph::RestrictionMap const>(restriction_map),
         internal_to_external_node_map, speed_profile);
 
     compressed_edge_container.SerializeInternalVector(config.geometry_output_path);
@@ -547,7 +492,7 @@ Extractor::BuildEdgeExpandedGraph(std::vector<QueryNode> &internal_to_external_n
 /**
   \brief Writing info on original (node-based) nodes
  */
-void Extractor::WriteNodeMapping(const std::vector<QueryNode> &internal_to_external_node_map)
+void Extractor::WriteNodeMapping(const std::vector<graph::QueryNode> &internal_to_external_node_map)
 {
     boost::filesystem::ofstream node_stream(config.node_output_path, std::ios::binary);
     const unsigned size_of_mapping = internal_to_external_node_map.size();
@@ -555,7 +500,7 @@ void Extractor::WriteNodeMapping(const std::vector<QueryNode> &internal_to_exter
     if (size_of_mapping > 0)
     {
         node_stream.write((char *)internal_to_external_node_map.data(),
-                          size_of_mapping * sizeof(QueryNode));
+                          size_of_mapping * sizeof(graph::QueryNode));
     }
     node_stream.close();
 }
@@ -567,7 +512,7 @@ void Extractor::WriteNodeMapping(const std::vector<QueryNode> &internal_to_exter
  */
 void Extractor::BuildRTree(std::vector<EdgeBasedNode> node_based_edge_list,
                            std::vector<bool> node_is_startpoint,
-                           const std::vector<QueryNode> &internal_to_external_node_map)
+                           const std::vector<graph::QueryNode> &internal_to_external_node_map)
 {
     util::SimpleLogger().Write() << "constructing r-tree of " << node_based_edge_list.size()
                                  << " edge elements build on-top of "

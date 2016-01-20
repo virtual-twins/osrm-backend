@@ -11,7 +11,7 @@
 
 namespace osrm
 {
-namespace extractor
+namespace graph
 {
 
 struct QueryNode

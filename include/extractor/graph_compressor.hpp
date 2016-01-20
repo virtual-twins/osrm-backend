@@ -5,6 +5,7 @@
 
 #include "extractor/speed_profile.hpp"
 #include "util/node_based_graph.hpp"
+#include "graph/restriction_map.hpp"
 
 #include <memory>
 #include <unordered_set>
@@ -15,7 +16,6 @@ namespace extractor
 {
 
 class CompressedEdgeContainer;
-class RestrictionMap;
 
 class GraphCompressor
 {
@@ -26,7 +26,7 @@ class GraphCompressor
 
     void Compress(const std::unordered_set<NodeID> &barrier_nodes,
                   const std::unordered_set<NodeID> &traffic_lights,
-                  RestrictionMap &restriction_map,
+                  graph::RestrictionMap &restriction_map,
                   util::NodeBasedDynamicGraph &graph,
                   CompressedEdgeContainer &geometry_compressor);
 

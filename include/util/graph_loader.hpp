@@ -4,10 +4,10 @@
 #include "util/fingerprint.hpp"
 #include "util/osrm_exception.hpp"
 #include "util/simple_logger.hpp"
-#include "extractor/external_memory_node.hpp"
+#include "graph/external_memory_node.hpp"
 #include "extractor/node_based_edge.hpp"
-#include "extractor/query_node.hpp"
-#include "extractor/restriction.hpp"
+#include "graph/query_node.hpp"
+#include "graph/turn_restriction.hpp"
 #include "util/typedefs.hpp"
 
 #include <boost/assert.hpp>
@@ -32,8 +32,9 @@ namespace util
  * The since the restrictions reference nodes using their external node id,
  * we need to renumber it to the new internal id.
 */
+inline
 unsigned loadRestrictionsFromFile(std::istream &input_stream,
-                                  std::vector<extractor::TurnRestriction> &restriction_list)
+                                  std::vector<graph::TurnRestriction> &restriction_list)
 {
     const FingerPrint fingerprint_valid = FingerPrint::GetValid();
     FingerPrint fingerprint_loaded;
@@ -50,7 +51,7 @@ unsigned loadRestrictionsFromFile(std::istream &input_stream,
     if (number_of_usable_restrictions > 0)
     {
         input_stream.read((char *)restriction_list.data(),
-                          number_of_usable_restrictions * sizeof(extractor::TurnRestriction));
+                          number_of_usable_restrictions * sizeof(graph::TurnRestriction));
     }
 
     return number_of_usable_restrictions;
@@ -62,10 +63,11 @@ unsigned loadRestrictionsFromFile(std::istream &input_stream,
  *  - list of traffic lights
  *  - nodes indexed by their internal (non-osm) id
  */
+inline
 NodeID loadNodesFromFile(std::istream &input_stream,
                          std::vector<NodeID> &barrier_node_list,
                          std::vector<NodeID> &traffic_light_node_list,
-                         std::vector<extractor::QueryNode> &node_array)
+                         std::vector<graph::QueryNode> &node_array)
 {
     const FingerPrint fingerprint_valid = FingerPrint::GetValid();
     FingerPrint fingerprint_loaded;
@@ -81,11 +83,11 @@ NodeID loadNodesFromFile(std::istream &input_stream,
     input_stream.read(reinterpret_cast<char *>(&n), sizeof(NodeID));
     SimpleLogger().Write() << "Importing n = " << n << " nodes ";
 
-    extractor::ExternalMemoryNode current_node;
+    graph::ExternalMemoryNode current_node;
     for (NodeID i = 0; i < n; ++i)
     {
         input_stream.read(reinterpret_cast<char *>(&current_node),
-                          sizeof(extractor::ExternalMemoryNode));
+                          sizeof(graph::ExternalMemoryNode));
         node_array.emplace_back(current_node.lat, current_node.lon, current_node.node_id);
         if (current_node.barrier)
         {
@@ -107,6 +109,7 @@ NodeID loadNodesFromFile(std::istream &input_stream,
 /**
  * Reads a .osrm file and produces the edges.
  */
+inline
 NodeID loadEdgesFromFile(std::istream &input_stream,
                          std::vector<extractor::NodeBasedEdge> &edge_list)
 {

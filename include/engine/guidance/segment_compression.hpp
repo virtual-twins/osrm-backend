@@ -35,7 +35,7 @@ inline bool Omittable(const SegmentInformation &first,
 
     std::cout << "First: " << first_name
               << " Second: " << second_name << std::endl;
-    return( first_name.size() > 1 && second_name.size() > 1 && ( first_name.find( second_name ) != std::string::npos
+    return( first.travel_mode == second.travel_mode && first_name.size() > 1 && second_name.size() > 1 && ( first_name.find( second_name ) != std::string::npos
       || second_name.find( first_name ) != std::string::npos ));
 }
 
@@ -49,7 +49,7 @@ inline void CombineSimilarSegments(std::vector<SegmentInformation> &segments,
     std::stack<std::size_t> indices;
     indices.push(0);
     for (std::size_t i = 1; i < segments.size(); ++i){
-      if( segments[i].turn_instruction != extractor::TurnInstruction::NoTurn ){
+      if( segments[i].turn_instruction == extractor::TurnInstruction::GoStraight ){
         if( Omittable( segments[indices.top()], segments[i], facade ) ){
             segments[i].turn_instruction =
                 extractor::TurnInstruction::NoTurn; // TODO decide on combineable types

@@ -10,10 +10,10 @@
 #include "util/deallocating_vector.hpp"
 #include "extractor/edge_based_node.hpp"
 #include "extractor/original_edge_data.hpp"
-#include "extractor/query_node.hpp"
+#include "graph/query_node.hpp"
 #include "extractor/turn_instructions.hpp"
 #include "util/node_based_graph.hpp"
-#include "extractor/restriction_map.hpp"
+#include "graph/restriction_map.hpp"
 
 #include <algorithm>
 #include <iosfwd>
@@ -43,8 +43,8 @@ class EdgeBasedGraphFactory
                                    const CompressedEdgeContainer &compressed_edge_container,
                                    const std::unordered_set<NodeID> &barrier_nodes,
                                    const std::unordered_set<NodeID> &traffic_lights,
-                                   std::shared_ptr<const RestrictionMap> restriction_map,
-                                   const std::vector<QueryNode> &node_info_list,
+                                   std::shared_ptr<const graph::RestrictionMap> restriction_map,
+                                   const std::vector<graph::QueryNode> &node_info_list,
                                    SpeedProfileProperties speed_profile);
 
 #ifdef DEBUG_GEOMETRY
@@ -91,9 +91,9 @@ class EdgeBasedGraphFactory
     util::DeallocatingVector<EdgeBasedEdge> m_edge_based_edge_list;
     unsigned m_max_edge_id;
 
-    const std::vector<QueryNode> &m_node_info_list;
+    const std::vector<graph::QueryNode> &m_node_info_list;
     std::shared_ptr<util::NodeBasedDynamicGraph> m_node_based_graph;
-    std::shared_ptr<RestrictionMap const> m_restriction_map;
+    std::shared_ptr<graph::RestrictionMap const> m_restriction_map;
 
     const std::unordered_set<NodeID> &m_barrier_nodes;
     const std::unordered_set<NodeID> &m_traffic_lights;

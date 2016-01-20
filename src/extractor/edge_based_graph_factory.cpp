@@ -26,8 +26,8 @@ EdgeBasedGraphFactory::EdgeBasedGraphFactory(
     const CompressedEdgeContainer &compressed_edge_container,
     const std::unordered_set<NodeID> &barrier_nodes,
     const std::unordered_set<NodeID> &traffic_lights,
-    std::shared_ptr<const RestrictionMap> restriction_map,
-    const std::vector<QueryNode> &node_info_list,
+    std::shared_ptr<const graph::RestrictionMap> restriction_map,
+    const std::vector<graph::QueryNode> &node_info_list,
     SpeedProfileProperties speed_profile)
     : m_max_edge_id(0), m_node_info_list(node_info_list),
       m_node_based_graph(std::move(node_based_graph)),
@@ -569,14 +569,14 @@ void EdgeBasedGraphFactory::GenerateEdgeExpandedEdges(
                         const unsigned node_count = node_based_edges.size() + 1;
                         edge_segment_file.write(reinterpret_cast<const char *>(&node_count),
                                                 sizeof(node_count));
-                        const QueryNode &first_node = m_node_info_list[previous];
+                        const auto &first_node = m_node_info_list[previous];
                         edge_segment_file.write(reinterpret_cast<const char *>(&first_node.node_id),
                                                 sizeof(first_node.node_id));
 
                         for (auto target_node : node_based_edges)
                         {
-                            const QueryNode &from = m_node_info_list[previous];
-                            const QueryNode &to = m_node_info_list[target_node.first];
+                            const auto &from = m_node_info_list[previous];
+                            const auto &to = m_node_info_list[target_node.first];
                             const double segment_length =
                                 util::coordinate_calculation::greatCircleDistance(
                                     from.lat, from.lon, to.lat, to.lon);
@@ -594,8 +594,8 @@ void EdgeBasedGraphFactory::GenerateEdgeExpandedEdges(
                     else
                     {
                         static const unsigned node_count = 2;
-                        const QueryNode from = m_node_info_list[node_u];
-                        const QueryNode to = m_node_info_list[node_v];
+                        const auto from = m_node_info_list[node_u];
+                        const auto to = m_node_info_list[node_v];
                         const double segment_length =
                             util::coordinate_calculation::greatCircleDistance(from.lat, from.lon,
                                                                               to.lat, to.lon);

@@ -1,8 +1,8 @@
-#include "extractor/restriction_map.hpp"
+#include "graph/restriction_map.hpp"
 
 namespace osrm
 {
-namespace extractor
+namespace graph
 {
 
 RestrictionMap::RestrictionMap(const std::vector<TurnRestriction> &restriction_list) : m_count(0)
@@ -157,5 +157,6 @@ bool RestrictionMap::IsSourceNode(const NodeID node) const
 {
     return m_restriction_start_nodes.find(node) != m_restriction_start_nodes.end();
 }
-}
-}
+
+} // namespace graph
+} // namespace osrm

@@ -7,7 +7,7 @@
 
 #include "engine/geospatial_query.hpp"
 #include "extractor/original_edge_data.hpp"
-#include "extractor/query_node.hpp"
+#include "graph/query_node.hpp"
 #include "contractor/query_edge.hpp"
 #include "util/shared_memory_vector_wrapper.hpp"
 #include "util/static_graph.hpp"
@@ -113,14 +113,14 @@ template <class EdgeDataT> class InternalDataFacade final : public BaseDataFacad
     {
         boost::filesystem::ifstream nodes_input_stream(nodes_file, std::ios::binary);
 
-        extractor::QueryNode current_node;
+        graph::QueryNode current_node;
         unsigned number_of_coordinates = 0;
         nodes_input_stream.read((char *)&number_of_coordinates, sizeof(unsigned));
         m_coordinate_list =
             std::make_shared<std::vector<util::FixedPointCoordinate>>(number_of_coordinates);
         for (unsigned i = 0; i < number_of_coordinates; ++i)
         {
-            nodes_input_stream.read((char *)&current_node, sizeof(extractor::QueryNode));
+            nodes_input_stream.read((char *)&current_node, sizeof(graph::QueryNode));
             m_coordinate_list->at(i) =
                 util::FixedPointCoordinate(current_node.lat, current_node.lon);
             BOOST_ASSERT((std::abs(m_coordinate_list->at(i).lat) >> 30) == 0);

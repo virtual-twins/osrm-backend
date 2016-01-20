@@ -4,8 +4,8 @@
 #include "extractor/internal_extractor_edge.hpp"
 #include "extractor/first_and_last_segment_of_way.hpp"
 #include "extractor/scripting_environment.hpp"
-#include "extractor/external_memory_node.hpp"
-#include "extractor/restriction.hpp"
+#include "graph/external_memory_node.hpp"
+#include "graph/turn_restriction.hpp"
 
 #include <stxxl/vector>
 #include <unordered_map>
@@ -41,9 +41,9 @@ class ExtractionContainers
 
   public:
     using STXXLNodeIDVector = stxxl::vector<OSMNodeID>;
-    using STXXLNodeVector = stxxl::vector<ExternalMemoryNode>;
+    using STXXLNodeVector = stxxl::vector<graph::ExternalMemoryNode>;
     using STXXLEdgeVector = stxxl::vector<InternalExtractorEdge>;
-    using STXXLRestrictionsVector = stxxl::vector<InputRestrictionContainer>;
+    using STXXLRestrictionsVector = stxxl::vector<graph::InputRestrictionContainer>;
     using STXXLWayIDStartEndVector = stxxl::vector<FirstAndLastSegmentOfWay>;
 
     STXXLNodeIDVector used_node_id_list;

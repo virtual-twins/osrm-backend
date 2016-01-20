@@ -1,7 +1,6 @@
 #include "extractor/restriction_parser.hpp"
 #include "extractor/extraction_way.hpp"
 
-#include "extractor/external_memory_node.hpp"
 #include "util/lua_util.hpp"
 #include "util/osrm_exception.hpp"
 #include "util/simple_logger.hpp"
@@ -90,7 +89,7 @@ void RestrictionParser::ReadRestrictionExceptions(lua_State *lua_state)
  * Some restrictions can also be ignored: See the ```get_exceptions``` function
  * in the corresponding profile.
  */
-boost::optional<InputRestrictionContainer>
+boost::optional<graph::InputRestrictionContainer>
 RestrictionParser::TryParse(const osmium::Relation &relation) const
 {
     // return if turn restrictions should be ignored
@@ -150,7 +149,7 @@ RestrictionParser::TryParse(const osmium::Relation &relation) const
         }
     }
 
-    InputRestrictionContainer restriction_container(is_only_restriction);
+    graph::InputRestrictionContainer restriction_container(is_only_restriction);
 
     for (const auto &member : relation.members())
     {

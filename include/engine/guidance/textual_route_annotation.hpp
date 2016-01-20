@@ -64,6 +64,7 @@ inline util::json::Array AnnotateRoute(const std::vector<SegmentInformation> &ro
                         extractor::TurnInstruction::EnterRoundAbout));
                     current_turn_instruction += temp_instruction;
                     current_turn_instruction += "-";
+                    std::cout << "Uturn: " << round_about.leave_at_exit << std::endl;
                     temp_instruction = std::to_string(round_about.leave_at_exit + 1);
                     current_turn_instruction += temp_instruction;
                     round_about.leave_at_exit = 0;

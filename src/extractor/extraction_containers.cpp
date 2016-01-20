@@ -162,7 +162,7 @@ void ExtractionContainers::PrepareNodes()
 
     std::cout << "[extractor] Sorting all nodes         ... " << std::flush;
     TIMER_START(sorting_nodes);
-    stxxl::sort(all_nodes_list.begin(), all_nodes_list.end(), ExternalMemoryNodeSTXXLCompare(),
+    stxxl::sort(all_nodes_list.begin(), all_nodes_list.end(), graph::ExternalMemoryNodeSTXXLCompare(),
                 stxxl_memory);
     TIMER_STOP(sorting_nodes);
     std::cout << "ok, after " << TIMER_SEC(sorting_nodes) << "s" << std::endl;
@@ -551,7 +551,7 @@ void ExtractionContainers::WriteNodes(std::ofstream &file_out_stream) const
         }
         BOOST_ASSERT(*node_id_iterator == node_iterator->node_id);
 
-        file_out_stream.write((char *)&(*node_iterator), sizeof(ExternalMemoryNode));
+        file_out_stream.write((char *)&(*node_iterator), sizeof(graph::ExternalMemoryNode));
 
         ++node_id_iterator;
         ++node_iterator;
@@ -580,7 +580,7 @@ void ExtractionContainers::WriteRestrictions(const std::string &path) const
             SPECIAL_NODEID != restriction_container.restriction.to.node)
         {
             restrictions_out_stream.write((char *)&(restriction_container.restriction),
-                                          sizeof(TurnRestriction));
+                                          sizeof(graph::TurnRestriction));
             ++written_restriction_count;
         }
     }
@@ -602,7 +602,7 @@ void ExtractionContainers::PrepareRestrictions()
     std::cout << "[extractor] Sorting " << restrictions_list.size() << " restriction. by from... "
               << std::flush;
     TIMER_START(sort_restrictions);
-    stxxl::sort(restrictions_list.begin(), restrictions_list.end(), CmpRestrictionContainerByFrom(),
+    stxxl::sort(restrictions_list.begin(), restrictions_list.end(), graph::CmpRestrictionContainerByFrom(),
                 stxxl_memory);
     TIMER_STOP(sort_restrictions);
     std::cout << "ok, after " << TIMER_SEC(sort_restrictions) << "s" << std::endl;
@@ -676,7 +676,7 @@ void ExtractionContainers::PrepareRestrictions()
 
     std::cout << "[extractor] Sorting restrictions. by to  ... " << std::flush;
     TIMER_START(sort_restrictions_to);
-    stxxl::sort(restrictions_list.begin(), restrictions_list.end(), CmpRestrictionContainerByTo(),
+    stxxl::sort(restrictions_list.begin(), restrictions_list.end(), graph::CmpRestrictionContainerByTo(),
                 stxxl_memory);
     TIMER_STOP(sort_restrictions_to);
     std::cout << "ok, after " << TIMER_SEC(sort_restrictions_to) << "s" << std::endl;
