@@ -330,14 +330,14 @@ Contractor::WriteContractedGraph(unsigned max_node_id,
     util::SimpleLogger().Write(logDEBUG) << "contracted graph has " << (max_used_node_id + 1)
                                          << " nodes";
 
-    std::vector<util::StaticGraph<EdgeData>::NodeArrayEntry> node_array;
+    std::vector<graph::StaticGraph<EdgeData>::NodeArrayEntry> node_array;
     // make sure we have at least one sentinel
     node_array.resize(max_node_id + 2);
 
     util::SimpleLogger().Write() << "Building node array";
-    util::StaticGraph<EdgeData>::EdgeIterator edge = 0;
-    util::StaticGraph<EdgeData>::EdgeIterator position = 0;
-    util::StaticGraph<EdgeData>::EdgeIterator last_edge;
+    graph::StaticGraph<EdgeData>::EdgeIterator edge = 0;
+    graph::StaticGraph<EdgeData>::EdgeIterator position = 0;
+    graph::StaticGraph<EdgeData>::EdgeIterator last_edge;
 
     // initializing 'first_edge'-field of nodes:
     for (const auto node : util::irange(0u, max_used_node_id + 1))
@@ -375,7 +375,7 @@ Contractor::WriteContractedGraph(unsigned max_node_id,
     if (node_array_size > 0)
     {
         hsgr_output_stream.write((char *)&node_array[0],
-                                 sizeof(util::StaticGraph<EdgeData>::NodeArrayEntry) *
+                                 sizeof(graph::StaticGraph<EdgeData>::NodeArrayEntry) *
                                      node_array_size);
     }
 
@@ -383,7 +383,7 @@ Contractor::WriteContractedGraph(unsigned max_node_id,
     util::SimpleLogger().Write() << "Building edge array";
     int number_of_used_edges = 0;
 
-    util::StaticGraph<EdgeData>::EdgeArrayEntry current_edge;
+    graph::StaticGraph<EdgeData>::EdgeArrayEntry current_edge;
     for (const auto edge : util::irange<std::size_t>(0, contracted_edge_list.size()))
     {
         // some self-loops are required for oneway handling. Need to assertthat we only keep these
@@ -411,7 +411,7 @@ Contractor::WriteContractedGraph(unsigned max_node_id,
         }
 #endif
         hsgr_output_stream.write((char *)&current_edge,
-                                 sizeof(util::StaticGraph<EdgeData>::EdgeArrayEntry));
+                                 sizeof(graph::StaticGraph<EdgeData>::EdgeArrayEntry));
 
         ++number_of_used_edges;
     }

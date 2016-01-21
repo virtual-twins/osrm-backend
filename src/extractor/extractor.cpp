@@ -18,7 +18,7 @@
 
 #include "util/typedefs.hpp"
 
-#include "util/static_graph.hpp"
+#include "graph/static_graph.hpp"
 #include "util/static_rtree.hpp"
 #include "extractor/compressed_edge_container.hpp"
 #include "graph/restriction_map.hpp"
@@ -382,7 +382,7 @@ void Extractor::FindComponents(unsigned max_edge_id,
             return source == rhs.source && target == rhs.target;
         }
     };
-    using UncontractedGraph = util::StaticGraph<UncontractedEdgeData>;
+    using UncontractedGraph = graph::StaticGraph<UncontractedEdgeData>;
     std::vector<InputEdge> edges;
     edges.reserve(input_edge_list.size() * 2);
 

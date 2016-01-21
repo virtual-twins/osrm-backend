@@ -1,8 +1,6 @@
 #include "extractor/graph_compressor.hpp"
 
 #include "extractor/compressed_edge_container.hpp"
-#include "util/dynamic_graph.hpp"
-#include "util/node_based_graph.hpp"
 #include "util/percent.hpp"
 
 #include "util/simple_logger.hpp"
@@ -20,7 +18,7 @@ GraphCompressor::GraphCompressor(SpeedProfileProperties speed_profile)
 void GraphCompressor::Compress(const std::unordered_set<NodeID> &barrier_nodes,
                                const std::unordered_set<NodeID> &traffic_lights,
                                graph::RestrictionMap &restriction_map,
-                               util::NodeBasedDynamicGraph &graph,
+                               graph::NodeBasedDynamicGraph &graph,
                                CompressedEdgeContainer &geometry_compressor)
 {
     const unsigned original_number_of_nodes = graph.GetNumberOfNodes();
@@ -167,7 +165,7 @@ void GraphCompressor::Compress(const std::unordered_set<NodeID> &barrier_nodes,
 
 void GraphCompressor::PrintStatistics(unsigned original_number_of_nodes,
                                       unsigned original_number_of_edges,
-                                      const util::NodeBasedDynamicGraph &graph) const
+                                      const graph::NodeBasedDynamicGraph &graph) const
 {
 
     unsigned new_node_count = 0;

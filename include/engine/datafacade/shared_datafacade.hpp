@@ -9,10 +9,10 @@
 
 #include "engine/geospatial_query.hpp"
 #include "util/range_table.hpp"
-#include "util/static_graph.hpp"
 #include "util/static_rtree.hpp"
 #include "util/make_unique.hpp"
 #include "util/simple_logger.hpp"
+#include "graph/static_graph.hpp"
 
 #include <boost/thread.hpp>
 
@@ -33,7 +33,7 @@ template <class EdgeDataT> class SharedDataFacade final : public BaseDataFacade<
   private:
     using EdgeData = EdgeDataT;
     using super = BaseDataFacade<EdgeData>;
-    using QueryGraph = util::StaticGraph<EdgeData, true>;
+    using QueryGraph = graph::StaticGraph<EdgeData, true>;
     using GraphNode = typename QueryGraph::NodeArrayEntry;
     using GraphEdge = typename QueryGraph::EdgeArrayEntry;
     using NameIndexBlock = typename util::RangeTable<16, true>::BlockT;

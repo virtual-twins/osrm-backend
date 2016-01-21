@@ -22,7 +22,7 @@ namespace extractor
 {
 
 EdgeBasedGraphFactory::EdgeBasedGraphFactory(
-    std::shared_ptr<util::NodeBasedDynamicGraph> node_based_graph,
+    std::shared_ptr<graph::NodeBasedDynamicGraph> node_based_graph,
     const CompressedEdgeContainer &compressed_edge_container,
     const std::unordered_set<NodeID> &barrier_nodes,
     const std::unordered_set<NodeID> &traffic_lights,
@@ -273,7 +273,7 @@ unsigned EdgeBasedGraphFactory::RenumberEdges()
         {
             EdgeData &edge_data = m_node_based_graph->GetEdgeData(current_edge);
 
-            // only number incoming edges
+            // only number outgoing edges
             if (edge_data.reversed)
             {
                 continue;

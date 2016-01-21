@@ -1,7 +1,7 @@
-#ifndef NODE_BASED_GRAPH_HPP
-#define NODE_BASED_GRAPH_HPP
+#ifndef GRAPH_NODE_BASED_GRAPH_HPP
+#define GRAPH_NODE_BASED_GRAPH_HPP
 
-#include "util/dynamic_graph.hpp"
+#include "graph/dynamic_graph.hpp"
 #include "extractor/node_based_edge.hpp"
 #include "util/graph_utils.hpp"
 
@@ -11,7 +11,7 @@
 
 namespace osrm
 {
-namespace util
+namespace graph
 {
 
 struct NodeBasedEdgeData
@@ -62,7 +62,7 @@ inline std::shared_ptr<NodeBasedDynamicGraph>
 NodeBasedDynamicGraphFromEdges(std::size_t number_of_nodes,
                                const std::vector<extractor::NodeBasedEdge> &input_edge_list)
 {
-    auto edges_list = directedEdgesFromCompressed<NodeBasedDynamicGraph::InputEdge>(
+    auto edges_list = util::directedEdgesFromCompressed<NodeBasedDynamicGraph::InputEdge>(
         input_edge_list, [](NodeBasedDynamicGraph::InputEdge &output_edge,
                             const extractor::NodeBasedEdge &input_edge)
         {
@@ -83,7 +83,7 @@ NodeBasedDynamicGraphFromEdges(std::size_t number_of_nodes,
 
     return graph;
 }
-}
-}
+} // namespace graph
+} // namespace osrm
 
 #endif // NODE_BASED_GRAPH_HPP

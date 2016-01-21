@@ -1,4 +1,5 @@
 #include "analysis/analyse_turns_options.hpp"
+#include "analysis/analyse_turns.hpp"
 #include "util/simple_logger.hpp"
 #include "util/typedefs.hpp"
 #include "io/node_based_graph.hpp"
@@ -23,12 +24,18 @@ int main(int argc, char *argv[]) try
     if (!analyse_turn_options.ParseArguments(argc, argv))
         return EXIT_FAILURE;
 
+    util::SimpleLogger().Write(logINFO) << "Loading restriction map (" << analyse_turn_options.restriction_file << ")";
     auto restriction_map = io::loadRestrictionMap(analyse_turn_options.restriction_file);
+    util::SimpleLogger().Write(logINFO) << "Finished loading restriction map.";
 
     std::unordered_set<NodeID> barrier_nodes, traffic_lights;
     std::vector<graph::QueryNode> internal_to_external_node_map;
+    util::SimpleLogger().Write(logINFO) << "Loading node based graph (" << analyse_turn_options.graph_file << ")";
     auto node_based_graph = io::loadNodeBasedGraph(analyse_turn_options.graph_file, barrier_nodes,
                                                    traffic_lights, internal_to_external_node_map);
+    util::SimpleLogger().Write(logINFO) << "Finished loading graph";
+
+    analysis::analyseGraph(*node_based_graph,barrier_nodes,traffic_lights,*restriction_map,internal_to_external_node_map);
 
     return EXIT_SUCCESS;
 }

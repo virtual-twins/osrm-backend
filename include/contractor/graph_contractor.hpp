@@ -3,7 +3,7 @@
 
 #include "util/binary_heap.hpp"
 #include "util/deallocating_vector.hpp"
-#include "util/dynamic_graph.hpp"
+#include "graph/dynamic_graph.hpp"
 #include "util/percent.hpp"
 #include "contractor/query_edge.hpp"
 #include "util/xor_fast_hash.hpp"
@@ -70,7 +70,7 @@ class GraphContractor
         bool target = false;
     };
 
-    using ContractorGraph = util::DynamicGraph<ContractorEdgeData>;
+    using ContractorGraph = graph::DynamicGraph<ContractorEdgeData>;
     //    using ContractorHeap = util::BinaryHeap<NodeID, NodeID, int, ContractorHeapData,
     //    ArrayStorage<NodeID, NodeID>
     //    >;
@@ -375,7 +375,7 @@ class GraphContractor
                         else
                         {
                             // node is not yet contracted.
-                            // add (renumbered) outgoing edges to new util::DynamicGraph.
+                            // add (renumbered) outgoing edges to new graph::DynamicGraph.
                             ContractorEdge new_edge = {new_node_id_from_orig_id_map[source],
                                                        new_node_id_from_orig_id_map[target], data};
 

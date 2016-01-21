@@ -12,7 +12,7 @@
 #include "extractor/original_edge_data.hpp"
 #include "graph/query_node.hpp"
 #include "extractor/turn_instructions.hpp"
-#include "util/node_based_graph.hpp"
+#include "graph/node_based_graph.hpp"
 #include "graph/restriction_map.hpp"
 
 #include <algorithm>
@@ -39,7 +39,7 @@ class EdgeBasedGraphFactory
     EdgeBasedGraphFactory(const EdgeBasedGraphFactory &) = delete;
     EdgeBasedGraphFactory &operator=(const EdgeBasedGraphFactory &) = delete;
 
-    explicit EdgeBasedGraphFactory(std::shared_ptr<util::NodeBasedDynamicGraph> node_based_graph,
+    explicit EdgeBasedGraphFactory(std::shared_ptr<graph::NodeBasedDynamicGraph> node_based_graph,
                                    const CompressedEdgeContainer &compressed_edge_container,
                                    const std::unordered_set<NodeID> &barrier_nodes,
                                    const std::unordered_set<NodeID> &traffic_lights,
@@ -76,7 +76,7 @@ class EdgeBasedGraphFactory
     int GetTurnPenalty(double angle, lua_State *lua_state) const;
 
   private:
-    using EdgeData = util::NodeBasedDynamicGraph::EdgeData;
+    using EdgeData = graph::NodeBasedDynamicGraph::EdgeData;
 
     //! maps index from m_edge_based_node_list to ture/false if the node is an entry point to the
     //! graph
@@ -92,7 +92,7 @@ class EdgeBasedGraphFactory
     unsigned m_max_edge_id;
 
     const std::vector<graph::QueryNode> &m_node_info_list;
-    std::shared_ptr<util::NodeBasedDynamicGraph> m_node_based_graph;
+    std::shared_ptr<graph::NodeBasedDynamicGraph> m_node_based_graph;
     std::shared_ptr<graph::RestrictionMap const> m_restriction_map;
 
     const std::unordered_set<NodeID> &m_barrier_nodes;

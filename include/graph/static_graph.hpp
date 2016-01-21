@@ -1,5 +1,5 @@
-#ifndef STATIC_GRAPH_HPP
-#define STATIC_GRAPH_HPP
+#ifndef GRAPH_STATIC_GRAPH_HPP
+#define GRAPH_STATIC_GRAPH_HPP
 
 #include "util/percent.hpp"
 #include "util/shared_memory_vector_wrapper.hpp"
@@ -15,7 +15,7 @@
 
 namespace osrm
 {
-namespace util
+namespace graph
 {
 
 template <typename EdgeDataT, bool UseSharedMemory = false> class StaticGraph
@@ -24,7 +24,7 @@ template <typename EdgeDataT, bool UseSharedMemory = false> class StaticGraph
     using NodeIterator = NodeID;
     using EdgeIterator = NodeID;
     using EdgeData = EdgeDataT;
-    using EdgeRange = range<EdgeIterator>;
+    using EdgeRange = util::range<EdgeIterator>;
 
     class InputEdge
     {
@@ -62,7 +62,7 @@ template <typename EdgeDataT, bool UseSharedMemory = false> class StaticGraph
 
     EdgeRange GetAdjacentEdgeRange(const NodeID node) const
     {
-        return irange(BeginEdges(node), EndEdges(node));
+        return util::irange(BeginEdges(node), EndEdges(node));
     }
 
     template <typename ContainerT> StaticGraph(const int nodes, const ContainerT &graph)
@@ -75,7 +75,7 @@ template <typename EdgeDataT, bool UseSharedMemory = false> class StaticGraph
         node_array.resize(number_of_nodes + 1);
         EdgeIterator edge = 0;
         EdgeIterator position = 0;
-        for (const auto node : irange(0u, number_of_nodes + 1))
+        for (const auto node : util::irange(0u, number_of_nodes + 1))
         {
             EdgeIterator last_edge = edge;
             while (edge < number_of_edges && graph[edge].source == node)
@@ -87,10 +87,10 @@ template <typename EdgeDataT, bool UseSharedMemory = false> class StaticGraph
         }
         edge_array.resize(position); //(edge)
         edge = 0;
-        for (const auto node : irange(0u, number_of_nodes))
+        for (const auto node : util::irange(0u, number_of_nodes))
         {
             EdgeIterator e = node_array[node + 1].first_edge;
-            for (const auto i : irange(node_array[node].first_edge, e))
+            for (const auto i : util::irange(node_array[node].first_edge, e))
             {
                 edge_array[i].target = graph[edge].target;
                 edge_array[i].data = graph[edge].data;
@@ -99,8 +99,8 @@ template <typename EdgeDataT, bool UseSharedMemory = false> class StaticGraph
         }
     }
 
-    StaticGraph(typename ShM<NodeArrayEntry, UseSharedMemory>::vector &nodes,
-                typename ShM<EdgeArrayEntry, UseSharedMemory>::vector &edges)
+    StaticGraph(typename util::ShM<NodeArrayEntry, UseSharedMemory>::vector &nodes,
+                typename util::ShM<EdgeArrayEntry, UseSharedMemory>::vector &edges)
     {
         number_of_nodes = static_cast<decltype(number_of_nodes)>(nodes.size() - 1);
         number_of_edges = static_cast<decltype(number_of_edges)>(edges.size());
@@ -137,7 +137,7 @@ template <typename EdgeDataT, bool UseSharedMemory = false> class StaticGraph
     // searches for a specific edge
     EdgeIterator FindEdge(const NodeIterator from, const NodeIterator to) const
     {
-        for (const auto i : irange(BeginEdges(from), EndEdges(from)))
+        for (const auto i : util::irange(BeginEdges(from), EndEdges(from)))
         {
             if (to == edge_array[i].target)
             {
@@ -190,10 +190,10 @@ template <typename EdgeDataT, bool UseSharedMemory = false> class StaticGraph
     NodeIterator number_of_nodes;
     EdgeIterator number_of_edges;
 
-    typename ShM<NodeArrayEntry, UseSharedMemory>::vector node_array;
-    typename ShM<EdgeArrayEntry, UseSharedMemory>::vector edge_array;
+    typename util::ShM<NodeArrayEntry, UseSharedMemory>::vector node_array;
+    typename util::ShM<EdgeArrayEntry, UseSharedMemory>::vector edge_array;
 };
-}
-}
+} // namespace graph
+} // namespace osrm
 
-#endif // STATIC_GRAPH_HPP
+#endif // GRAPH_STATIC_GRAPH_HPP

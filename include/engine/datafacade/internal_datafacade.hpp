@@ -8,9 +8,9 @@
 #include "engine/geospatial_query.hpp"
 #include "extractor/original_edge_data.hpp"
 #include "graph/query_node.hpp"
+#include "graph/static_graph.hpp"
 #include "contractor/query_edge.hpp"
 #include "util/shared_memory_vector_wrapper.hpp"
-#include "util/static_graph.hpp"
 #include "util/static_rtree.hpp"
 #include "util/range_table.hpp"
 #include "util/graph_loader.hpp"
@@ -34,7 +34,7 @@ template <class EdgeDataT> class InternalDataFacade final : public BaseDataFacad
 
   private:
     using super = BaseDataFacade<EdgeDataT>;
-    using QueryGraph = util::StaticGraph<typename super::EdgeData>;
+    using QueryGraph = graph::StaticGraph<typename super::EdgeData>;
     using InputEdge = typename QueryGraph::InputEdge;
     using RTreeLeaf = typename super::RTreeLeaf;
     using InternalRTree =
@@ -95,7 +95,7 @@ template <class EdgeDataT> class InternalDataFacade final : public BaseDataFacad
 
         util::SimpleLogger().Write() << "loading graph from " << hsgr_path.string();
 
-        m_number_of_nodes = readHSGRFromStream(hsgr_path, node_list, edge_list, &m_check_sum);
+        m_number_of_nodes = util::readHSGRFromStream(hsgr_path, node_list, edge_list, &m_check_sum);
 
         BOOST_ASSERT_MSG(0 != node_list.size(), "node list empty");
         // BOOST_ASSERT_MSG(0 != edge_list.size(), "edge list empty");

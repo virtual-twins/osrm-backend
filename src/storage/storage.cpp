@@ -3,7 +3,7 @@
 #include "graph/query_node.hpp"
 #include "contractor/query_edge.hpp"
 #include "util/shared_memory_vector_wrapper.hpp"
-#include "util/static_graph.hpp"
+#include "graph/static_graph.hpp"
 #include "util/static_rtree.hpp"
 #include "engine/datafacade/datafacade_base.hpp"
 #include "extractor/travel_mode.hpp"
@@ -42,7 +42,7 @@ using RTreeLeaf =
 using RTreeNode = util::StaticRTree<RTreeLeaf,
                                     util::ShM<util::FixedPointCoordinate, true>::vector,
                                     true>::TreeNode;
-using QueryGraph = util::StaticGraph<contractor::QueryEdge::EdgeData>;
+using QueryGraph = graph::StaticGraph<contractor::QueryEdge::EdgeData>;
 
 // delete a shared memory region. report warning if it could not be deleted
 void deleteRegion(const SharedDataType region)

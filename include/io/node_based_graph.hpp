@@ -9,9 +9,9 @@
 
 #include "graph/query_node.hpp"
 #include "graph/restriction_map.hpp"
+#include "graph/node_based_graph.hpp"
 
 #include "util/typedefs.hpp"
-#include "util/node_based_graph.hpp"
 
 namespace osrm
 {
@@ -22,7 +22,7 @@ namespace io
 std::shared_ptr<graph::RestrictionMap> loadRestrictionMap( const std::string &filename );
 
 // load a node based graph from file
-std::shared_ptr<util::NodeBasedDynamicGraph>
+std::shared_ptr<graph::NodeBasedDynamicGraph>
 loadNodeBasedGraph(const std::string &filename,
                    std::unordered_set<NodeID> &barrier_nodes,
                    std::unordered_set<NodeID> &traffic_lights,

@@ -1,5 +1,5 @@
-#ifndef DYNAMICGRAPH_HPP
-#define DYNAMICGRAPH_HPP
+#ifndef GRAPH_DYNAMICGRAPH_HPP
+#define GRAPH_DYNAMICGRAPH_HPP
 
 #include "util/deallocating_vector.hpp"
 #include "util/integer_range.hpp"
@@ -17,7 +17,7 @@
 
 namespace osrm
 {
-namespace util
+namespace graph
 {
 
 template <typename EdgeDataT> class DynamicGraph
@@ -26,7 +26,7 @@ template <typename EdgeDataT> class DynamicGraph
     using EdgeData = EdgeDataT;
     using NodeIterator = unsigned;
     using EdgeIterator = unsigned;
-    using EdgeRange = range<EdgeIterator>;
+    using EdgeRange = util::range<EdgeIterator>;
 
     class InputEdge
     {
@@ -77,7 +77,7 @@ template <typename EdgeDataT> class DynamicGraph
         node_array.resize(number_of_nodes + 1);
         EdgeIterator edge = 0;
         EdgeIterator position = 0;
-        for (const auto node : irange(0u, number_of_nodes))
+        for (const auto node : util::irange(0u, number_of_nodes))
         {
             EdgeIterator last_edge = edge;
             while (edge < number_of_edges && graph[edge].source == node)
@@ -92,9 +92,9 @@ template <typename EdgeDataT> class DynamicGraph
         edge_list.reserve(static_cast<std::size_t>(edge_list.size() * 1.1));
         edge_list.resize(position);
         edge = 0;
-        for (const auto node : irange(0u, number_of_nodes))
+        for (const auto node : util::irange(0u, number_of_nodes))
         {
-            for (const auto i : irange(node_array[node].first_edge,
+            for (const auto i : util::irange(node_array[node].first_edge,
                                        node_array[node].first_edge + node_array[node].edges))
             {
                 edge_list[i].target = graph[edge].target;
@@ -116,7 +116,7 @@ template <typename EdgeDataT> class DynamicGraph
     unsigned GetDirectedOutDegree(const NodeIterator n) const
     {
         unsigned degree = 0;
-        for (const auto edge : irange(BeginEdges(n), EndEdges(n)))
+        for (const auto edge : util::irange(BeginEdges(n), EndEdges(n)))
         {
             if (!GetEdgeData(edge).reversed)
             {
@@ -146,7 +146,7 @@ template <typename EdgeDataT> class DynamicGraph
 
     EdgeRange GetAdjacentEdgeRange(const NodeIterator node) const
     {
-        return irange(BeginEdges(node), EndEdges(node));
+        return util::irange(BeginEdges(node), EndEdges(node));
     }
 
     NodeIterator InsertNode()
@@ -180,12 +180,12 @@ template <typename EdgeDataT> class DynamicGraph
                     edge_list.reserve(requiredCapacity * 1.1);
                 }
                 edge_list.resize(edge_list.size() + newSize);
-                for (const auto i : irange(0u, node.edges))
+                for (const auto i : util::irange(0u, node.edges))
                 {
                     edge_list[newFirstEdge + i] = edge_list[node.first_edge + i];
                     makeDummy(node.first_edge + i);
                 }
-                for (const auto i : irange(node.edges + 1, newSize))
+                for (const auto i : util::irange(node.edges + 1, newSize))
                 {
                     makeDummy(newFirstEdge + i);
                 }
@@ -240,7 +240,7 @@ template <typename EdgeDataT> class DynamicGraph
     // searches for a specific edge
     EdgeIterator FindEdge(const NodeIterator from, const NodeIterator to) const
     {
-        for (const auto i : irange(BeginEdges(from), EndEdges(from)))
+        for (const auto i : util::irange(BeginEdges(from), EndEdges(from)))
         {
             if (to == edge_list[i].target)
             {
@@ -318,9 +318,9 @@ template <typename EdgeDataT> class DynamicGraph
     std::atomic_uint number_of_edges;
 
     std::vector<Node> node_array;
-    DeallocatingVector<Edge> edge_list;
+    util::DeallocatingVector<Edge> edge_list;
 };
-}
-}
+} // namespace graph
+} // namespace osrm
 
-#endif // DYNAMICGRAPH_HPP
+#endif // GRAPH_DYNAMICGRAPH_HPP

@@ -36,7 +36,7 @@ std::shared_ptr<graph::RestrictionMap> loadRestrictionMap(const std::string &fil
 /**
 \brief Load a node based graph from .osrm file
 */
-std::shared_ptr<util::NodeBasedDynamicGraph>
+std::shared_ptr<graph::NodeBasedDynamicGraph>
 loadNodeBasedGraph(const std::string &filename,
                    std::unordered_set<NodeID> &barrier_nodes,
                    std::unordered_set<NodeID> &traffic_lights,
@@ -69,10 +69,10 @@ loadNodeBasedGraph(const std::string &filename,
     if (edge_list.empty())
     {
         util::SimpleLogger().Write(logWARNING) << "The input data is empty, exiting.";
-        return std::shared_ptr<util::NodeBasedDynamicGraph>();
+        return std::shared_ptr<graph::NodeBasedDynamicGraph>();
     }
 
-    return util::NodeBasedDynamicGraphFromEdges(number_of_node_based_nodes, edge_list);
+    return graph::NodeBasedDynamicGraphFromEdges(number_of_node_based_nodes, edge_list);
 }
 
 } // namespace io
