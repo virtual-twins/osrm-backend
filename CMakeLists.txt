@@ -87,10 +87,10 @@ add_executable(osrm-routed src/tools/routed.cpp $<TARGET_OBJECTS:SERVER> $<TARGE
 add_executable(osrm-datastore src/tools/store.cpp $<TARGET_OBJECTS:UTIL>)
 add_executable(osrm-classify-turns src/tools/classify-turns.cpp)
 add_library(osrm src/osrm/osrm.cpp $<TARGET_OBJECTS:ENGINE> $<TARGET_OBJECTS:UTIL>)
-add_library(osrm_extract $<TARGET_OBJECTS:EXTRACTOR> $<TARGET_OBJECTS:UTIL>)
+add_library(osrm_extract $<TARGET_OBJECTS:EXTRACTOR> $<TARGET_OBJECTS:UTIL> $<TARGET_OBJECTS:GRAPH> $<TARGET_OBJECTS:IO>)
 add_library(osrm_contract $<TARGET_OBJECTS:CONTRACTOR> $<TARGET_OBJECTS:UTIL>)
 add_library(osrm_store $<TARGET_OBJECTS:STORAGE> $<TARGET_OBJECTS:UTIL>)
-add_library(osrm_classify $<TARGET_OBJECTS:ANALYSIS> $<TARGET_OBJECTS:UTIL>)
+add_library(osrm_classify $<TARGET_OBJECTS:ANALYSIS> $<TARGET_OBJECTS:UTIL> $<TARGET_OBJECTS:IO> $<TARGET_OBJECTS:GRAPH>)
 
 # Unit tests
 add_executable(engine-tests EXCLUDE_FROM_ALL unit_tests/engine_tests.cpp ${EngineTestsGlob} $<TARGET_OBJECTS:ENGINE> $<TARGET_OBJECTS:UTIL>)
@@ -297,6 +297,7 @@ endif()
 # Binaries
 target_link_libraries(osrm-datastore osrm_store ${Boost_LIBRARIES})
 target_link_libraries(osrm-extract osrm_extract ${Boost_LIBRARIES})
+target_link_libraries(osrm-classify-turns osrm_classify ${Boost_LIBRARIES})
 target_link_libraries(osrm-prepare osrm_contract ${Boost_LIBRARIES})
 target_link_libraries(osrm-routed osrm ${Boost_LIBRARIES} ${OPTIONAL_SOCKET_LIBS} ${ZLIB_LIBRARY})
 
@@ -340,6 +341,7 @@ target_link_libraries(osrm ${ENGINE_LIBRARIES})
 target_link_libraries(osrm_contract ${CONTRACTOR_LIBRARIES})
 target_link_libraries(osrm_extract ${EXTRACTOR_LIBRARIES})
 target_link_libraries(osrm_store ${STORAGE_LIBRARIES})
+target_link_libraries(osrm_classify ${UTIL_LIBRARIES})
 # Tests
 target_link_libraries(engine-tests ${ENGINE_LIBRARIES})
 target_link_libraries(extractor-tests ${EXTRACTOR_LIBRARIES})

@@ -1,5 +1,6 @@
 #include "extractor/original_edge_data.hpp"
 #include "util/range_table.hpp"
+#include "graph/query_node.hpp"
 #include "contractor/query_edge.hpp"
 #include "util/shared_memory_vector_wrapper.hpp"
 #include "util/static_graph.hpp"
