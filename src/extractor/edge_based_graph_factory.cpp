@@ -426,6 +426,8 @@ void EdgeBasedGraphFactory::GenerateEdgeExpandedEdges(
                     continue;
                 }
 
+                // only add an edge if turn is not a U-turn except when it is
+                // at the end of a dead-end street
                 if (is_barrier_node)
                 {
                     if (node_u != node_w)
@@ -456,8 +458,6 @@ void EdgeBasedGraphFactory::GenerateEdgeExpandedEdges(
                     }
                 }
 
-                // only add an edge if turn is not a U-turn except when it is
-                // at the end of a dead-end street
                 if (m_restriction_map->CheckIfTurnIsRestricted(node_u, node_v, node_w) &&
                     (only_restriction_to_node == SPECIAL_NODEID) &&
                     (node_w != only_restriction_to_node))

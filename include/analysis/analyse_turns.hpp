@@ -17,58 +17,55 @@ namespace osrm
 namespace analysis
 {
 
+enum LengthClass
+{
+    SHORT,
+    NORMAL,
+    NUM_LENGTH_CLASSES
+};
+
+#define SMALLER_OR_LARGER(x, y)                                                                    \
+    if ((x) < (y))                                                                                 \
+        return true;                                                                               \
+    else if ((y) < (x))                                                                            \
+    return false
+
+#define SMALLER_OR_LARGER_BOOL(x, y)                                                               \
+    if (!(x) && (y))                                                                               \
+        return true;                                                                               \
+    else if (!(y) && x)                                                                            \
+    return false
+
 struct IntersectionType
 {
     IntersectionType();
 
-    std::uint8_t degree;
-    std::uint8_t in_count;
-    std::uint8_t out_count;
+    std::uint8_t neighbours;
+    std::uint8_t in_count[static_cast<std::size_t>(LengthClass::NUM_LENGTH_CLASSES)];
+    std::uint8_t out_count[static_cast<std::size_t>(LengthClass::NUM_LENGTH_CLASSES)];
 
-    bool roundabout_exit;
-    bool roundabout_entry;
+    bool is_roundabout;
     bool barrier;
     bool traffic_light;
 
     std::int32_t example_lat;
     std::int32_t example_lon;
 
+    std::uint16_t possible_turns;
+
     bool operator<(const IntersectionType &other) const
     {
-        if (degree < other.degree)
-            return true;
-        else if (degree > other.degree)
-            return false;
+        SMALLER_OR_LARGER(neighbours, other.neighbours);
+        for (std::size_t i = 0; i < static_cast<std::size_t>(LengthClass::NUM_LENGTH_CLASSES); ++i)
+        {
+            SMALLER_OR_LARGER(in_count[i], other.in_count[i]);
+            SMALLER_OR_LARGER(out_count[i], other.out_count[i]);
+        }
+        SMALLER_OR_LARGER(possible_turns,other.possible_turns);
 
-        if (in_count < other.in_count)
-            return true;
-        else if (in_count > other.in_count)
-            return false;
-
-        if (out_count < other.out_count)
-            return true;
-        else if (out_count > other.out_count)
-            return false;
-
-        if (!roundabout_exit && other.roundabout_exit)
-            return true;
-        else if (roundabout_exit && !other.roundabout_exit)
-            return false;
-
-        if (!roundabout_entry && other.roundabout_entry)
-            return true;
-        else if (roundabout_entry && !other.roundabout_entry)
-            return false;
-
-        if (!barrier && other.barrier)
-            return true;
-        else if (barrier && !other.barrier)
-            return false;
-
-        if (!traffic_light && other.traffic_light)
-            return true;
-        else if (traffic_light && !other.traffic_light)
-            return false;
+        SMALLER_OR_LARGER_BOOL(is_roundabout, other.is_roundabout);
+        SMALLER_OR_LARGER_BOOL(barrier, other.barrier);
+        SMALLER_OR_LARGER_BOOL(traffic_light, other.traffic_light);
 
         // turn types are equal
         return false;
@@ -76,6 +73,9 @@ struct IntersectionType
 
     std::string toString() const;
 };
+
+#undef SMALLER_OR_LARGER
+#undef SMALLER_OR_LARGER_BOOL
 
 void analyseGraph(const graph::NodeBasedDynamicGraph &node_based_graph,
                   const std::unordered_set<NodeID> &barrier_nodes,

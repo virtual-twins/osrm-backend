@@ -4,6 +4,8 @@
 #include "util/typedefs.hpp"
 #include "io/node_based_graph.hpp"
 #include "graph/query_node.hpp"
+#include "extractor/graph_compressor.hpp"
+#include "extractor/compressed_edge_container.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -34,6 +36,12 @@ int main(int argc, char *argv[]) try
     auto node_based_graph = io::loadNodeBasedGraph(analyse_turn_options.graph_file, barrier_nodes,
                                                    traffic_lights, internal_to_external_node_map);
     util::SimpleLogger().Write(logINFO) << "Finished loading graph";
+
+    extractor::GraphCompressor compressor;
+    extractor::CompressedEdgeContainer compressed_edges;
+    util::SimpleLogger().Write(logINFO) << "Compressing graph geometry";
+    compressor.Compress( barrier_nodes, 0, traffic_lights, *restriction_map, *node_based_graph, compressed_edges );
+    util::SimpleLogger().Write(logINFO) << "Done with graph compression.";
 
     analysis::analyseGraph(*node_based_graph,barrier_nodes,traffic_lights,*restriction_map,internal_to_external_node_map);
 

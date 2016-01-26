@@ -297,7 +297,7 @@ endif()
 # Binaries
 target_link_libraries(osrm-datastore osrm_store ${Boost_LIBRARIES})
 target_link_libraries(osrm-extract osrm_extract ${Boost_LIBRARIES})
-target_link_libraries(osrm-classify-turns osrm_classify ${Boost_LIBRARIES})
+target_link_libraries(osrm-classify-turns osrm_classify osrm_extract ${Boost_LIBRARIES})
 target_link_libraries(osrm-prepare osrm_contract ${Boost_LIBRARIES})
 target_link_libraries(osrm-routed osrm ${Boost_LIBRARIES} ${OPTIONAL_SOCKET_LIBS} ${ZLIB_LIBRARY})
 

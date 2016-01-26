@@ -10,12 +10,8 @@ namespace osrm
 namespace extractor
 {
 
-GraphCompressor::GraphCompressor(SpeedProfileProperties speed_profile)
-    : speed_profile(std::move(speed_profile))
-{
-}
-
 void GraphCompressor::Compress(const std::unordered_set<NodeID> &barrier_nodes,
+                               const EdgeWeight traffic_signal_penalty,
                                const std::unordered_set<NodeID> &traffic_lights,
                                graph::RestrictionMap &restriction_map,
                                graph::NodeBasedDynamicGraph &graph,
@@ -130,8 +126,8 @@ void GraphCompressor::Compress(const std::unordered_set<NodeID> &barrier_nodes,
             graph.GetEdgeData(reverse_e1).distance += rev_edge_data2.distance;
             if (has_node_penalty)
             {
-                graph.GetEdgeData(forward_e1).distance += speed_profile.traffic_signal_penalty;
-                graph.GetEdgeData(reverse_e1).distance += speed_profile.traffic_signal_penalty;
+                graph.GetEdgeData(forward_e1).distance += traffic_signal_penalty;
+                graph.GetEdgeData(reverse_e1).distance += traffic_signal_penalty;
             }
 
             // extend e1's to targets of e2's
@@ -152,11 +148,11 @@ void GraphCompressor::Compress(const std::unordered_set<NodeID> &barrier_nodes,
             // store compressed geometry in container
             geometry_compressor.CompressEdge(
                 forward_e1, forward_e2, node_v, node_w,
-                forward_weight1 + (has_node_penalty ? speed_profile.traffic_signal_penalty : 0),
+                forward_weight1 + (has_node_penalty ? traffic_signal_penalty : 0),
                 forward_weight2);
             geometry_compressor.CompressEdge(
                 reverse_e1, reverse_e2, node_v, node_u, reverse_weight1,
-                reverse_weight2 + (has_node_penalty ? speed_profile.traffic_signal_penalty : 0));
+                reverse_weight2 + (has_node_penalty ? traffic_signal_penalty : 0));
         }
     }
 

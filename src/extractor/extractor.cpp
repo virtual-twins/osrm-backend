@@ -458,9 +458,9 @@ Extractor::BuildEdgeExpandedGraph(std::vector<graph::QueryNode> &internal_to_ext
                                                    traffic_lights, internal_to_external_node_map);
 
     CompressedEdgeContainer compressed_edge_container;
-    GraphCompressor graph_compressor(speed_profile);
-    graph_compressor.Compress(barrier_nodes, traffic_lights, *restriction_map, *node_based_graph,
-                              compressed_edge_container);
+    GraphCompressor graph_compressor;
+    graph_compressor.Compress(barrier_nodes, speed_profile.traffic_signal_penalty, traffic_lights,
+                              *restriction_map, *node_based_graph, compressed_edge_container);
 
     EdgeBasedGraphFactory edge_based_graph_factory(
         node_based_graph, compressed_edge_container, barrier_nodes, traffic_lights,

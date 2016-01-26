@@ -22,9 +22,8 @@ class GraphCompressor
     using EdgeData = graph::NodeBasedDynamicGraph::EdgeData;
 
   public:
-    GraphCompressor(SpeedProfileProperties speed_profile);
-
     void Compress(const std::unordered_set<NodeID> &barrier_nodes,
+                  const EdgeWeight traffic_signal_penalty,
                   const std::unordered_set<NodeID> &traffic_lights,
                   graph::RestrictionMap &restriction_map,
                   graph::NodeBasedDynamicGraph &graph,
@@ -34,8 +33,6 @@ class GraphCompressor
     void PrintStatistics(unsigned original_number_of_nodes,
                          unsigned original_number_of_edges,
                          const graph::NodeBasedDynamicGraph &graph) const;
-
-    SpeedProfileProperties speed_profile;
 };
 }
 }
