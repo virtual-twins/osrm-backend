@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <sstream>
 #include <utility>
+#include <vector>
 #include <map>
 #include <set>
 
@@ -29,8 +30,7 @@ LengthClass getClass(EdgeWeight weight)
 }
 
 IntersectionType::IntersectionType()
-    : is_roundabout(false), barrier(false), traffic_light(false), example_lat(0), example_lon(0),
-      possible_turns(0)
+    : is_roundabout(false), barrier(false), traffic_light(false), possible_turns(0)
 {
     for (std::size_t i = 0; i < static_cast<std::size_t>(LengthClass::NUM_LENGTH_CLASSES); ++i)
     {
@@ -48,9 +48,7 @@ std::string IntersectionType::toString() const
     for (std::size_t i = 0; i < static_cast<std::size_t>(LengthClass::NUM_LENGTH_CLASSES); ++i)
         oss << " " << static_cast<std::uint32_t>(out_count[i]);
     oss << " Turns: " << possible_turns << " Rnd: " << is_roundabout << " B: " << barrier
-        << " TL: " << traffic_light << " [i.e. "
-        << std::setprecision(ceil(log(COORDINATE_PRECISION))) << example_lat / COORDINATE_PRECISION
-        << ", " << example_lon / COORDINATE_PRECISION << "]";
+        << " TL: " << traffic_light;
     return oss.str();
 }
 
@@ -62,7 +60,8 @@ void analyseGraph(const graph::NodeBasedDynamicGraph &node_based_graph,
 {
     util::SimpleLogger().Write(logINFO) << "Analysing " << node_based_graph.GetNumberOfNodes()
                                         << " nodes.";
-    std::map<IntersectionType, std::uint32_t> intersection_map;
+    std::map<IntersectionType, std::pair<std::uint32_t, std::vector<util::FixedPointCoordinate>>>
+        intersection_map;
 
     const auto isRoundabout = [&node_based_graph](NodeID nid)
     {
@@ -87,7 +86,7 @@ void analyseGraph(const graph::NodeBasedDynamicGraph &node_based_graph,
         {
             const auto &data = node_based_graph.GetEdgeData(eid);
             NodeID target = node_based_graph.GetTarget(eid);
-            neighbours.insert( target );
+            neighbours.insert(target);
             bool is_inbound = false;
             if (!data.reversed)
             {
@@ -130,7 +129,7 @@ void analyseGraph(const graph::NodeBasedDynamicGraph &node_based_graph,
                             restriction_map.CheckIfTurnIsRestricted(target, nid, out_node))
                             continue;
 
-                        if(barrier_nodes.count(nid))
+                        if (barrier_nodes.count(nid))
                         {
                             if (target != out_node)
                             {
@@ -145,8 +144,7 @@ void analyseGraph(const graph::NodeBasedDynamicGraph &node_based_graph,
                                 for (auto edge : node_based_graph.GetAdjacentEdgeRange(nid))
                                 {
                                     auto target = node_based_graph.GetTarget(edge);
-                                    auto reverse_edge =
-                                        node_based_graph.FindEdge(target, nid);
+                                    auto reverse_edge = node_based_graph.FindEdge(target, nid);
                                     if (!node_based_graph.GetEdgeData(reverse_edge).reversed)
                                     {
                                         ++number_of_emmiting_bidirectional_edges;
@@ -167,10 +165,13 @@ void analyseGraph(const graph::NodeBasedDynamicGraph &node_based_graph,
         intersection_type.barrier = (barrier_nodes.count(nid) > 0);
         intersection_type.traffic_light = (traffic_lights.count(nid) > 0);
 
-        intersection_type.example_lat = internal_to_external_node_map[nid].lat;
-        intersection_type.example_lon = internal_to_external_node_map[nid].lon;
+        util::FixedPointCoordinate coordinate(internal_to_external_node_map[nid].lat,
+                                              internal_to_external_node_map[nid].lon);
 
-        intersection_map[intersection_type]++;
+        auto &entry = intersection_map[intersection_type];
+        entry.first++;
+        if (entry.second.size() < 10)
+            entry.second.push_back(coordinate);
     }
 
     util::SimpleLogger().Write(logINFO) << "Found " << intersection_map.size()
@@ -178,21 +179,32 @@ void analyseGraph(const graph::NodeBasedDynamicGraph &node_based_graph,
 
     using std::begin;
     using std::end;
-    typedef std::pair<std::uint32_t, IntersectionType> pUI;
+    typedef std::pair<std::pair<std::uint32_t, std::vector<util::FixedPointCoordinate>>,
+                      IntersectionType> pUI;
     std::vector<pUI> intersections(intersection_map.size());
-    std::transform(begin(intersection_map), end(intersection_map), begin(intersections),
-                   [](const std::pair<IntersectionType, std::uint32_t> &pair)
-                   {
-                       return std::make_pair(pair.second, pair.first);
-                   });
+    std::transform(
+        begin(intersection_map), end(intersection_map), begin(intersections),
+        [](const std::pair<IntersectionType,
+                           std::pair<std::uint32_t, std::vector<util::FixedPointCoordinate>>>
+               &pair)
+        {
+            return std::make_pair(pair.second, pair.first);
+        });
     std::sort(begin(intersections), end(intersections), [](const pUI &left, const pUI &right)
               {
-                  return left.first > right.first;
+                  return left.first.first > right.first.first;
               });
 
     for (const auto &intersection : intersections)
-        util::SimpleLogger().Write(logINFO) << intersection.first << " : "
-                                            << intersection.second.toString();
+    {
+        std::ostringstream oss;
+        oss << intersection.first.first << " " << intersection.first.second.size()
+            << std::setprecision(ceil(log(COORDINATE_PRECISION)));
+        for (const auto coord : intersection.first.second)
+            oss << " " << coord;
+        oss << " #" << intersection.second.toString();
+        util::SimpleLogger().Write(logINFO) << oss.str();
+    }
 }
 
 } // namespace graph

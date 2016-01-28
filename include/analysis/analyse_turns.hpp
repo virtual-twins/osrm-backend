@@ -48,9 +48,6 @@ struct IntersectionType
     bool barrier;
     bool traffic_light;
 
-    std::int32_t example_lat;
-    std::int32_t example_lon;
-
     std::uint16_t possible_turns;
 
     bool operator<(const IntersectionType &other) const

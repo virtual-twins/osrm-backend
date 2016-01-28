@@ -193,6 +193,13 @@ std::vector<SegmentInformation> const &SegmentList<DataFacadeT>::Get() const
 }
 
 template <typename DataFacadeT>
+std::vector<SegmentInformation> &SegmentList<DataFacadeT>::Get()
+{
+    return segments;
+}
+
+
+template <typename DataFacadeT>
 void SegmentList<DataFacadeT>::AppendSegment(const FixedPointCoordinate coordinate,
                                              const PathData &path_point)
 {

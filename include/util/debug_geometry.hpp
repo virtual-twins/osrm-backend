@@ -23,7 +23,7 @@ inline void DEBUG_GEOMETRY_STOP() {}
 
 inline void DEBUG_TURNS_START(const std::string & /* debug_turns_filename */) {}
 inline void DEBUG_TURN(const NodeID /* node */,
-                       const std::vector<extractor::QueryNode> & /* m_node_info_list */,
+                       const std::vector<graph::QueryNode> & /* m_node_info_list */,
                        const FixedPointCoordinate /* first_coordinate */,
                        const int /* turn_angle */,
                        const int /* turn_penalty */)
