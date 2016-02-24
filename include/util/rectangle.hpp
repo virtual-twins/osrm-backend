@@ -110,36 +110,36 @@ struct RectangleInt2D
         switch (d)
         {
         case NORTH:
-            min_dist = coordinate_calculation::greatCircleDistance(
+            min_dist = coordinate_calculation::euclideanDistance(
                 location, Coordinate(location.lon, max_lat));
             break;
         case SOUTH:
-            min_dist = coordinate_calculation::greatCircleDistance(
+            min_dist = coordinate_calculation::euclideanDistance(
                 location, Coordinate(location.lon, min_lat));
             break;
         case WEST:
-            min_dist = coordinate_calculation::greatCircleDistance(
+            min_dist = coordinate_calculation::euclideanDistance(
                 location, Coordinate(min_lon, location.lat));
             break;
         case EAST:
-            min_dist = coordinate_calculation::greatCircleDistance(
+            min_dist = coordinate_calculation::euclideanDistance(
                 location, Coordinate(max_lon, location.lat));
             break;
         case NORTH_EAST:
             min_dist =
-                coordinate_calculation::greatCircleDistance(location, Coordinate(max_lon, max_lat));
+                coordinate_calculation::euclideanDistance(location, Coordinate(max_lon, max_lat));
             break;
         case NORTH_WEST:
             min_dist =
-                coordinate_calculation::greatCircleDistance(location, Coordinate(min_lon, max_lat));
+                coordinate_calculation::euclideanDistance(location, Coordinate(min_lon, max_lat));
             break;
         case SOUTH_EAST:
             min_dist =
-                coordinate_calculation::greatCircleDistance(location, Coordinate(max_lon, min_lat));
+                coordinate_calculation::euclideanDistance(location, Coordinate(max_lon, min_lat));
             break;
         case SOUTH_WEST:
             min_dist =
-                coordinate_calculation::greatCircleDistance(location, Coordinate(min_lon, min_lat));
+                coordinate_calculation::euclideanDistance(location, Coordinate(min_lon, min_lat));
             break;
         default:
             break;

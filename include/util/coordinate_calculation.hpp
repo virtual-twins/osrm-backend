@@ -21,50 +21,53 @@ namespace coordinate_calculation
 
 //! Projects both coordinates and takes the euclidean distance of the projected points
 // Does not return meters!
-double euclideanDistance(const Coordinate first_coordinate,
-                         const Coordinate second_coordinate);
+double euclideanDistance(const Coordinate first_coordinate, const Coordinate second_coordinate);
 
-double haversineDistance(const Coordinate first_coordinate,
-                         const Coordinate second_coordinate);
+double haversineDistance(const Coordinate first_coordinate, const Coordinate second_coordinate);
 
-double greatCircleDistance(const Coordinate first_coordinate,
-                           const Coordinate second_coordinate);
+double greatCircleDistance(const Coordinate first_coordinate, const Coordinate second_coordinate);
 
+double perpendicularEuclideanDistance(const Coordinate segment_source,
+                                      const Coordinate segment_target,
+                                      const Coordinate query_location);
 
-double perpendicularDistance(const Coordinate segment_source,
-                             const Coordinate segment_target,
-                             const Coordinate query_location);
+double perpendicularGreatCircleDistance(const Coordinate segment_source,
+                                      const Coordinate segment_target,
+                                      const Coordinate query_location);
 
-double perpendicularDistance(const Coordinate segment_source,
-                             const Coordinate segment_target,
-                             const Coordinate query_location,
-                             Coordinate &nearest_location,
-                             double &ratio);
-
-double
-perpendicularDistanceFromProjectedCoordinate(const Coordinate segment_source,
-                                             const Coordinate segment_target,
-                                             const Coordinate query_location,
-                                             const std::pair<double, double> projected_xy_coordinate);
+double perpendicularEuclideanDistance(const Coordinate segment_source,
+                                      const Coordinate segment_target,
+                                      const Coordinate query_location,
+                                      Coordinate &nearest_location,
+                                      double &ratio);
 
 double
-perpendicularDistanceFromProjectedCoordinate(const Coordinate segment_source,
-                                             const Coordinate segment_target,
-                                             const Coordinate query_location,
-                                             const std::pair<double, double> projected_xy_coordinate,
-                                             Coordinate &nearest_location,
-                                             double &ratio);
+perpendicularDistanceEuclideanDistance(const Coordinate segment_source,
+                                       const Coordinate segment_target,
+                                       const Coordinate query_location,
+                                       const std::pair<double, double> projected_xy_coordinate);
+
+double
+perpendicularDistanceEuclideanDistance(const Coordinate segment_source,
+                                       const Coordinate segment_target,
+                                       const Coordinate query_location,
+                                       const std::pair<double, double> projected_xy_coordinate,
+                                       Coordinate &nearest_location,
+                                       double &ratio);
+void
+projectPointOnSegment(const Coordinate segment_source,
+                      const Coordinate segment_target,
+                      const Coordinate query_location,
+                      Coordinate &nearest_location,
+                      double &ratio);
 
 double degToRad(const double degree);
 double radToDeg(const double radian);
 
-double bearing(const Coordinate first_coordinate,
-               const Coordinate second_coordinate);
+double bearing(const Coordinate first_coordinate, const Coordinate second_coordinate);
 
 // Get angle of line segment (A,C)->(C,B)
-double computeAngle(const Coordinate first,
-                    const Coordinate second,
-                    const Coordinate third);
+double computeAngle(const Coordinate first, const Coordinate second, const Coordinate third);
 
 namespace mercator
 {

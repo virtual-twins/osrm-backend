@@ -329,7 +329,7 @@ class StaticRTree
                        {
                            return std::make_pair(true, true);
                        },
-                       [max_results](const std::size_t num_results, const float)
+                       [max_results](const std::size_t num_results, const EdgeDataT &)
                        {
                            return num_results >= max_results;
                        });
@@ -352,12 +352,6 @@ class StaticRTree
         while (!traversal_queue.empty())
         {
             const QueryCandidate current_query_node = traversal_queue.top();
-            if (terminate(results.size(), current_query_node.min_dist))
-            {
-                traversal_queue = std::priority_queue<QueryCandidate>{};
-                break;
-            }
-
             traversal_queue.pop();
 
             if (current_query_node.node.template is<TreeNode>())
@@ -378,6 +372,13 @@ class StaticRTree
             {
                 // inspecting an actual road segment
                 const auto &current_segment = current_query_node.node.template get<EdgeDataT>();
+
+                // We can't terminate for inner tree node - we don't know the real min distance
+                if (terminate(results.size(), current_segment))
+                {
+                    traversal_queue = std::priority_queue<QueryCandidate>{};
+                    break;
+                }
 
                 auto use_segment = filter(current_segment);
                 if (!use_segment.first && !use_segment.second)
@@ -417,7 +418,7 @@ class StaticRTree
         {
             auto &current_edge = current_leaf_node.objects[i];
             const float current_perpendicular_distance =
-                coordinate_calculation::perpendicularDistanceFromProjectedCoordinate(
+                coordinate_calculation::perpendicularEuclideanDistance(
                     m_coordinate_list->at(current_edge.u), m_coordinate_list->at(current_edge.v),
                     input_coordinate, projected_coordinate);
             // distance must be non-negative

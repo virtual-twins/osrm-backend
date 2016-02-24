@@ -224,17 +224,15 @@ void sampling_verify_rtree(RTreeT &rtree,
         auto lsnn_u = result_lsnn.back().u;
         auto lsnn_v = result_lsnn.back().v;
 
-        double current_ratio = 0.;
-        Coordinate nearest;
         const double rtree_dist = coordinate_calculation::perpendicularDistance(
-            coords[rtree_u], coords[rtree_v], q, nearest, current_ratio);
+            coords[rtree_u], coords[rtree_v], q);
         const double lsnn_dist = coordinate_calculation::perpendicularDistance(
-            coords[lsnn_u], coords[lsnn_v], q, nearest, current_ratio);
+            coords[lsnn_u], coords[lsnn_v], q);
         BOOST_CHECK_LE(std::abs(rtree_dist - lsnn_dist), std::numeric_limits<double>::epsilon());
     }
 }
 
-template <typename FixtureT, typename RTreeT = TestStaticRTree>
+template <typename RTreeT, typename FixtureT>
 void build_rtree(const std::string &prefix,
                  FixtureT *fixture,
                  std::string &leaves_path,
@@ -251,7 +249,7 @@ void construction_test(const std::string &prefix, FixtureT *fixture)
 {
     std::string leaves_path;
     std::string nodes_path;
-    build_rtree<FixtureT, RTreeT>(prefix, fixture, leaves_path, nodes_path);
+    build_rtree<RTreeT, FixtureT>(prefix, fixture, leaves_path, nodes_path);
     RTreeT rtree(nodes_path, leaves_path, fixture->coords);
     LinearSearchNN<TestData> lsnn(fixture->coords, fixture->edges);
 
@@ -262,7 +260,22 @@ void construction_test(const std::string &prefix, FixtureT *fixture)
 BOOST_FIXTURE_TEST_CASE(construct_tiny, TestRandomGraphFixture_10_30)
 {
     using TinyTestTree = StaticRTree<TestData, std::vector<Coordinate>, false, 2, 1>;
-    construction_test<TinyTestTree>("test_tiny", this);
+    std::string prefix = "test_tiny";
+    std::string leaves_path;
+    std::string nodes_path;
+    build_rtree<TinyTestTree>(prefix, this, leaves_path, nodes_path);
+    TinyTestTree rtree(nodes_path, leaves_path, coords);
+
+    LinearSearchNN<TestData> lsnn(coords, edges);
+
+    Coordinate query {FloatLongitude{76.4239}, FloatLatitude{70.2184}};
+    auto result = rtree.Nearest(query, 1);
+    auto reference = lsnn.Nearest(query, 1);
+    const double result_dist = coordinate_calculation::perpendicularDistance(
+        coords->at(result.front().u), coords->at(result.front().v), query);
+    const double reference_dist = coordinate_calculation::perpendicularDistance(
+        coords->at(reference.front().u), coords->at(reference.front().v), query);
+    BOOST_CHECK_LE(std::abs(result_dist - reference_dist), std::numeric_limits<double>::epsilon());
 }
 
 BOOST_FIXTURE_TEST_CASE(construct_half_leaf_test, TestRandomGraphFixture_LeafHalfFull)
@@ -313,8 +326,7 @@ BOOST_AUTO_TEST_CASE(regression_test)
 
     std::string leaves_path;
     std::string nodes_path;
-    build_rtree<GraphFixture, MiniStaticRTree>("test_regression", &fixture, leaves_path,
-                                               nodes_path);
+    build_rtree<MiniStaticRTree>("test_regression", &fixture, leaves_path, nodes_path);
     MiniStaticRTree rtree(nodes_path, leaves_path, fixture.coords);
     LinearSearchNN<TestData> lsnn(fixture.coords, fixture.edges);
 
@@ -330,48 +342,6 @@ BOOST_AUTO_TEST_CASE(regression_test)
     BOOST_CHECK_EQUAL(result_ls.front().v, result_rtree.front().v);
 }
 
-void TestRectangle(double width, double height, double center_lat, double center_lon)
-{
-    Coordinate center{FloatLongitude(center_lon), FloatLatitude(center_lat)};
-
-    TestStaticRTree::Rectangle rect;
-    rect.min_lat = center.lat - FixedLatitude(height / 2.0 * COORDINATE_PRECISION);
-    rect.max_lat = center.lat + FixedLatitude(height / 2.0 * COORDINATE_PRECISION);
-    rect.min_lon = center.lon - FixedLongitude(width / 2.0 * COORDINATE_PRECISION);
-    rect.max_lon = center.lon + FixedLongitude(width / 2.0 * COORDINATE_PRECISION);
-
-    const FixedLongitude lon_offset(5. * COORDINATE_PRECISION);
-    const FixedLatitude lat_offset(5. * COORDINATE_PRECISION);
-    Coordinate north(center.lon, rect.max_lat + lat_offset);
-    Coordinate south(center.lon, rect.min_lat - lat_offset);
-    Coordinate west(rect.min_lon - lon_offset, center.lat);
-    Coordinate east(rect.max_lon + lon_offset, center.lat);
-    Coordinate north_east(rect.max_lon + lon_offset, rect.max_lat + lat_offset);
-    Coordinate north_west(rect.min_lon - lon_offset, rect.max_lat + lat_offset);
-    Coordinate south_east(rect.max_lon + lon_offset, rect.min_lat - lat_offset);
-    Coordinate south_west(rect.min_lon - lon_offset, rect.min_lat - lat_offset);
-
-    /* Distance to line segments of rectangle */
-    BOOST_CHECK_EQUAL(rect.GetMinDist(north), coordinate_calculation::greatCircleDistance(north, Coordinate(north.lon, rect.max_lat)));
-    BOOST_CHECK_EQUAL(rect.GetMinDist(south), coordinate_calculation::greatCircleDistance(south, Coordinate(south.lon, rect.min_lat)));
-    BOOST_CHECK_EQUAL(rect.GetMinDist(west), coordinate_calculation::greatCircleDistance(west,   Coordinate(rect.min_lon, west.lat)));
-    BOOST_CHECK_EQUAL(rect.GetMinDist(east), coordinate_calculation::greatCircleDistance(east,   Coordinate(rect.max_lon, east.lat)));
-
-    /* Distance to corner points */
-    BOOST_CHECK_EQUAL(rect.GetMinDist(north_east), coordinate_calculation::greatCircleDistance(north_east, Coordinate(rect.max_lon, rect.max_lat)));
-    BOOST_CHECK_EQUAL(rect.GetMinDist(north_west), coordinate_calculation::greatCircleDistance(north_west, Coordinate(rect.min_lon, rect.max_lat)));
-    BOOST_CHECK_EQUAL(rect.GetMinDist(south_east), coordinate_calculation::greatCircleDistance(south_east, Coordinate(rect.max_lon, rect.min_lat)));
-    BOOST_CHECK_EQUAL(rect.GetMinDist(south_west), coordinate_calculation::greatCircleDistance(south_west, Coordinate(rect.min_lon, rect.min_lat)));
-}
-
-BOOST_AUTO_TEST_CASE(rectangle_test)
-{
-    TestRectangle(10, 10, 5, 5);
-    TestRectangle(10, 10, -5, 5);
-    TestRectangle(10, 10, 5, -5);
-    TestRectangle(10, 10, -5, -5);
-    TestRectangle(10, 10, 0, 0);
-}
 
 BOOST_AUTO_TEST_CASE(bearing_tests)
 {
@@ -385,7 +355,7 @@ BOOST_AUTO_TEST_CASE(bearing_tests)
 
     std::string leaves_path;
     std::string nodes_path;
-    build_rtree<GraphFixture, MiniStaticRTree>("test_bearing", &fixture, leaves_path, nodes_path);
+    build_rtree<MiniStaticRTree>("test_bearing", &fixture, leaves_path, nodes_path);
     MiniStaticRTree rtree(nodes_path, leaves_path, fixture.coords);
     engine::GeospatialQuery<MiniStaticRTree> query(rtree, fixture.coords);
 

@@ -63,8 +63,9 @@ template <typename RTreeT> class GeospatialQuery
                           {
                               return checkSegmentBearing(data, bearing, bearing_range);
                           },
-                          [max_distance](const std::size_t, const double min_dist)
+                          [max_distance](const std::size_t, const EdgeDataT &data)
                           {
+                              auto dist = util::coordinate_calculation::perpendicularDistanceGreatCircleDistance();
                               return min_dist > max_distance;
                           });
 

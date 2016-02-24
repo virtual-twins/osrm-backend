@@ -82,52 +82,56 @@ double greatCircleDistance(const Coordinate coordinate_1,
     return std::hypot(x_value, y_value) * EARTH_RADIUS;
 }
 
-double perpendicularDistance(const Coordinate source_coordinate,
-                             const Coordinate target_coordinate,
-                             const Coordinate query_location)
+double perpendicularEuclideanDistance(const Coordinate segment_source,
+                                      const Coordinate segment_target,
+                                      const Coordinate query_location)
 {
     double ratio;
-    Coordinate nearest_location;
+    Coordinate nearest;
+    projectPointOnSegment(segment_source, segment_target, query_location, nearest, ratio);
 
-    return perpendicularDistance(source_coordinate, target_coordinate, query_location,
-                                 nearest_location, ratio);
+    return euclideanDistance(nearest, query_location);
 }
 
-double perpendicularDistance(const Coordinate segment_source,
-                             const Coordinate segment_target,
-                             const Coordinate query_location,
-                             Coordinate &nearest_location,
-                             double &ratio)
+double perpendicularGreatCircleDistance(const Coordinate segment_source,
+                                      const Coordinate segment_target,
+                                      const Coordinate query_location)
 {
-    using namespace coordinate_calculation;
+    double ratio;
+    Coordinate nearest;
+    projectPointOnSegment(segment_source, segment_target, query_location, nearest, ratio);
 
-    return perpendicularDistanceFromProjectedCoordinate(
-        segment_source, segment_target, query_location,
-        {static_cast<double>(toFloating(query_location.lon)), mercator::latToY(toFloating(query_location.lat))},
-        nearest_location, ratio);
+    return greatCircleDistance(nearest, query_location);
 }
 
 double
-perpendicularDistanceFromProjectedCoordinate(const Coordinate source_coordinate,
-                                             const Coordinate target_coordinate,
-                                             const Coordinate query_location,
-                                             const std::pair<double, double> projected_xy_coordinate)
+perpendicularDistanceEuclideanDistance(const Coordinate segment_source,
+                                       const Coordinate segment_target,
+                                       const Coordinate query_location,
+                                       const std::pair<double, double> projected_xy_coordinate)
 {
     double ratio;
-    Coordinate nearest_location;
+    Coordinate nearest;
+    projectPointOnSegment(segment_source, segment_target, query_location, nearest, ratio);
 
-    return perpendicularDistanceFromProjectedCoordinate(source_coordinate, target_coordinate,
-                                                        query_location, projected_xy_coordinate,
-                                                        nearest_location, ratio);
+    return greatCircleDistance(nearest, query_location);
 }
 
-double
-perpendicularDistanceFromProjectedCoordinate(const Coordinate segment_source,
-                                             const Coordinate segment_target,
-                                             const Coordinate query_location,
-                                             const std::pair<double, double> projected_xy_coordinate,
-                                             Coordinate &nearest_location,
-                                             double &ratio)
+void
+projectPointOnSegment(const Coordinate segment_source,
+                      const Coordinate segment_target,
+                      const Coordinate query_location,
+                      Coordinate &nearest_location,
+                      double &ratio)
+{
+}
+
+void
+projectPointOnSegment(const Coordinate segment_source,
+                      const Coordinate segment_target,
+                      const std::pair<double, double> projected_xy_coordinate,
+                      Coordinate &nearest_location,
+                      double &ratio)
 {
     using namespace coordinate_calculation;
 
@@ -168,7 +172,7 @@ perpendicularDistanceFromProjectedCoordinate(const Coordinate segment_source,
     // are just interested in the ratio
     if (std::isnan(ratio))
     {
-        ratio = (segment_target == query_location ? 1.0 : 0.0);
+        ratio = (c == y && d == x) ? 1.0 : 0.0;
     }
     else if (std::abs(ratio) <= std::numeric_limits<double>::epsilon())
     {
@@ -196,10 +200,6 @@ perpendicularDistanceFromProjectedCoordinate(const Coordinate segment_source,
         nearest_location.lat = toFixed(FloatLatitude(mercator::yToLat(p)));
     }
     BOOST_ASSERT(nearest_location.IsValid());
-
-    const double approximate_distance = greatCircleDistance(query_location, nearest_location);
-    BOOST_ASSERT(0.0 <= approximate_distance);
-    return approximate_distance;
 }
 
 double degToRad(const double degree)
