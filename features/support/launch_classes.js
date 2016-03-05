@@ -17,7 +17,9 @@ var OSRMBaseLoader = class {
         var limit = Timeout(this.scope.LAUNCH_TIMEOUT, { err: this.scope.RoutedError('Launching osrm-routed timed out.') });
 
         var runLaunch = (cb) => {
+            console.log("RUNNING LAUNCH");
             this.osrmUp(() => {
+                console.log("IS UP");
                 this.waitForConnection(cb);
             });
         };
@@ -25,30 +27,31 @@ var OSRMBaseLoader = class {
         runLaunch(limit((e) => { if (e) callback(e); callback(); }));
     }
 
-    shutdown (callback) {
-        var limit = Timeout(scope.SHUTDOWN_TIMEOUT, { err: this.scope.RoutedError('Shutting down osrm-routed timed out.')});
+    shutdown () {
+        var limit = Timeout(this.scope.SHUTDOWN_TIMEOUT, { err: this.scope.RoutedError('Shutting down osrm-routed timed out.')});
 
         var runShutdown = (cb) => {
             this.osrmDown(cb);
         };
 
-        runShutdown(limit((e) => { if (e) callback(e); callback(); }));
+        runShutdown(limit((e) => { if (e) throw e; }));
     }
 
-    osrmUp () {
+    osrmUp (callback) {
         // TODO i feel super dubious about this
-        console.log('hello?');
-        return true;
+        console.log('hello? HELLOOOOO?');
+        callback(true);
         // if (this.pid) return !!waitpid(this.pid);
     }
 
-    osrmDown () {
+    osrmDown (callback) {
         // TODO less but still dubious
         if (this.pid) process.kill(this.pid, this.scope.TERMSIGNAL);
+        callback();
     }
 
     kill () {
-        if (this.pid) process.kill(this.pid, 'KILL');
+        if (this.pid) process.kill(this.pid, 'SIGKILL');
     }
 
     waitForConnection (callback) {
@@ -56,8 +59,14 @@ var OSRMBaseLoader = class {
             port: this.scope.OSRM_PORT,
             host: '127.0.0.1'
         })
-            .on('connect', callback)
-            .on('error', () => setTimeout(callback, 100));
+            .on('connect', (c) => {
+                console.log("HEY HEY< CONNECTED");
+                callback();
+            })
+            .on('error', (e) => {
+                console.log('errrrrr error', e);
+                setTimeout(callback, 100);
+            });
     }
 
     waitForShutdown (callback) {
@@ -81,28 +90,26 @@ var OSRMDirectLoader = class extends OSRMBaseLoader {
     load (inputFile, callback) {
         this.inputFile = inputFile;
         var startDir = process.cwd();
-        // process.chdir(this.scope.TEST_FOLDER);
         this.shutdown(() =>
             this.launch(() =>
-                callback(() =>
-                        this.shutdown(() => {
-                            // process.chdir(startDir);
-                        })
-                    )));
+                // callback(() =>
+                this.shutdown(callback)));
     }
 
-    osrmUp () {
-        if (this.pid) return;
+    osrmUp (callback) {
+        console.log("HELLO IS UP");
+        if (this.pid) return callback();
         var writeToLog = (data) => {
             console.error('ACK', data.toString());
             fs.appendFileSync(this.scope.OSRM_ROUTED_LOG_FILE, data);
         }
 
-        var child = spawn(util.format('%s%s/osrm-routed', this.scope.LOAD_LIBRARIES, this.scope.BIN_PATH), [this.input_file, util.format('--port "%d"', this.scope.OSRM_PORT)], {detached: true});
+        var child = spawn(util.format('%s%s/osrm-routed', this.scope.LOAD_LIBRARIES, this.scope.BIN_PATH), [this.input_file, util.format('-p%d', this.scope.OSRM_PORT)], {detached: true});
+        this.pid = child.pid;
         child.stdout.on('data', writeToLog);
         child.stderr.on('data', writeToLog);
 
-        // TODO return sth??
+        callback();
     }
 }
 
@@ -114,31 +121,30 @@ var OSRMDatastoreLoader = class extends OSRMBaseLoader {
     load (inputFile, callback) {
         this.inputFile = inputFile;
         var startDir = process.cwd();
-        // process.chdir(this.scope.TEST_FOLDER);
         this.loadData(() => {
-            if (!this.pid) return this.launch(() =>
-                callback(() => {
-                    // process.chdir(startDir);
-                }))});
+            if (!this.pid) return this.launch(callback)});
     }
 
     loadData (callback) {
         this.scope.runBin('osrm-datastore', this.inputFile, callback);
     }
 
-    osrmUp () {
+    osrmUp (callback) {
         // TODO 'return if osrm_up?'
-        if (this.pid) return;
+        console.log("HELLOOOOOO IS UP");
+        if (this.pid) return callback();
         var writeToLog = (data) => {
             console.error('ACK', data.toString());
             fs.appendFileSync(this.scope.OSRM_ROUTED_LOG_FILE, data);
         }
 
-        var child = spawn(util.format('%s%s/osrm-routed', this.scope.LOAD_LIBRARIES, this.scope.BIN_PATH), ['--shared-memory=1', util.format('--port "%d"', this.scope.OSRM_PORT)], {detached: true});
+        var child = spawn(util.format('%s%s/osrm-routed', this.scope.LOAD_LIBRARIES, this.scope.BIN_PATH), ['--shared-memory=1', util.format('-p%d', this.scope.OSRM_PORT)], {detached: true});
+        console.log(child);
+        this.pid = child.pid;
         child.stdout.on('data', writeToLog);
         child.stderr.on('data', writeToLog);
 
-        // TODO return sth??
+        callback();
     }
 }
 
@@ -148,20 +154,29 @@ module.exports = {
     _OSRMLoader: class {
         constructor (scope) {
             this.scope = scope;
+            this.loader = null;
         }
 
         load (inputFile, block, callback) {
+            console.log("LOAD CALLED")
             var method = this.scope.loadMethod,
                 loader;
             if (method === 'datastore') {
-                loader = new OSRMDatastoreLoader(this.scope);
-                loader.load(inputFile, block, callback);
+                this.loader = new OSRMDatastoreLoader(this.scope);
+                this.loader.load(inputFile, block, callback);
             } else if (method === 'directly') {
-                loader = new OSRMDirectLoader(this.scope);
-                loader.load(inputFile, block, callback);
+                this.loader = new OSRMDirectLoader(this.scope);
+                this.loader.load(inputFile, block, callback);
             } else {
                 throw new Error('*** Unknown load method ' + method);
             }
+        }
+
+        shutdown () {
+            if (!this.loader) {
+                console.error('what there is no loader?');
+            }
+            this.loader.shutdown();
         }
     }
 }

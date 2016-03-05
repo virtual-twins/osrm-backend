@@ -8,7 +8,7 @@ var exec = require('child_process').exec;
 module.exports = function () {
     this.initializeEnv = (callback) => {
         this.DEFAULT_PORT = 5000;
-        this.DEFAULT_TIMEOUT = 2;
+        this.DEFAULT_TIMEOUT = 2000;
         this.ROOT_FOLDER = process.cwd();
         this.OSM_USER = 'osrm';
         this.OSM_GENERATOR = 'osrm-test';
@@ -24,8 +24,8 @@ module.exports = function () {
         this.BIN_PATH = path.resolve(this.ROOT_FOLDER, 'build');
         this.DEFAULT_INPUT_FORMAT = 'osm';
         this.DEFAULT_ORIGIN = [1,1];
-        this.LAUNCH_TIMEOUT = 1;
-        this.SHUTDOWN_TIMEOUT = 10;
+        this.LAUNCH_TIMEOUT = 1000;
+        this.SHUTDOWN_TIMEOUT = 10000;
         this.DEFAULT_LOAD_METHOD = 'datastore';
         this.OSRM_ROUTED_LOG_FILE = 'osrm-routed.log';
 
@@ -40,7 +40,7 @@ module.exports = function () {
             this.EXE = '.exe';
             this.QQ = '"';
         } else {
-            this.TERMSIGNAL = 'TERM';
+            this.TERMSIGNAL = 'SIGTERM';
             this.EXE = '';
             this.QQ = '';
         }
@@ -114,7 +114,7 @@ module.exports = function () {
         this.verifyExistenceOfBinaries();
     }
 
-    // process.on('exit', () => {
-    //     this.OSRMLoader.shutdown();
-    // });
+    process.on('exit', () => {
+        this.OSRMLoader.shutdown();
+    });
 }

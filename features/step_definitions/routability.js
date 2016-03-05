@@ -2,6 +2,7 @@
 
 var util = require('util');
 var d3 = require('d3-queue');
+var classes = require('../support/data_classes');
 
 module.exports = function () {
     // this.World = require('../support/world');
@@ -16,13 +17,19 @@ module.exports = function () {
                    throw new Error('*** routability table must contain either "forw", "backw" or "bothw" column');
                 }
 
+                console.log("GOING TO LOAD");
                 this.OSRMLoader.load(util.format('%s.osrm', this.preparedFile), () => {
+                    console.log("DID LOAD")
                     var testRow = (row, i, cb) => {
                         var outputRow = row,
                             attempts = [];
 
+                        console.log("BOUTTA TEST ROW")
+
                         testRoutabilityRow(i, (result) => {
+                            console.log("OUT OF FILTER!!!")
                             directions.filter(d => !!table.hashes()[0][d]).forEach((direction) => {
+                                console.log("IN FILTER!!!")
                                 var want = this.shortcutsHash[row[direction]] || row[direction];
 
                                 switch (true) {
@@ -74,11 +81,15 @@ module.exports = function () {
         var result = {};
 
         var testDirection = (dir, callback) => {
-            var a = new this.Location(this.origin[0] + (1+this.WAY_SPACING*i) * this.zoom, this.origin[1]),
-                b = new this.Location(this.origin[0] + (3+this.WAY_SPACING*i) * this.zoom, this.origin[1]),
+            console.log("TESTING", dir, classes.Location, this.origin, this.WAY_SPACING, this.zoom);
+            var a = new classes.Location(this.origin[0] + (1+this.WAY_SPACING*i) * this.zoom, this.origin[1]),
+                b = new classes.Location(this.origin[0] + (3+this.WAY_SPACING*i) * this.zoom, this.origin[1]),
                 r = {};
+            console.log("TESTING A B", a, b)
 
+            console.log("REQUESTING");
             this.requestRoute((dir === 'forw' ? [a, b] : [b, a]), [], this.queryParams, (err, res, body) => {
+                console.log('requested', err, res, body)
                 // TODO err handling
 
                 // r.query = this.query;

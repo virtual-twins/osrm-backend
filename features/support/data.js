@@ -1,5 +1,3 @@
-// 'use strict';
-
 var fs = require('fs');
 var path = require('path');
 var util = require('util');
@@ -9,20 +7,6 @@ var OSM = require('./build_osm');
 var classes = require('./data_classes');
 
 module.exports = function () {
-    // export function setInputFormat (format) => {
-    //     if (['pbf','osm'].indexOf(format) === -1) throw new Error('*** Input format must be eiter "osm" or "pbf"');
-    //     this.inputFormat = format;
-    // }
-    // TODO I don't think this is used, hence commented out, same w below
-
-    // export function inputFormat () => {
-    //     return this.inputFormat || this.DEFAULT_INPUT_FORMAT;
-    // }
-
-    // def sanitized_scenario_title
-    //   @sanitized_scenario_title ||= @scenario_title.to_s.gsub /[^0-9A-Za-z.\-]/, '_'
-    // end
-
     this.setGridSize = (meters) => {
         // the constant is calculated (with BigDecimal as: 1.0/(DEG_TO_RAD*EARTH_RADIUS_IN_METERS
         // see ApproximateDistance() in ExtractorStructs.h
@@ -121,8 +105,8 @@ module.exports = function () {
     }
 
     this.findNodeByName = (s) => {
-        if (s.size !== 1) throw new Error(util.format('*** invalid node name "%s", must be single characters', s));
-        if (!s.match(/[a-z0-9]/)) throw new Error(util.format('*** invalid node name "%s", must be alphanumeric', s));
+        if (s.size !== 1) callback(new Error(util.format('*** invalid node name "%s", must be single characters', s)));
+        if (!s.match(/[a-z0-9]/)) callback(new Error(util.format('*** invalid node name "%s", must be alphanumeric', s)));
 
         var fromNode;
         if (s.match(/[a-z]/)) {
@@ -172,28 +156,11 @@ module.exports = function () {
         this.osmID = 0;
     }
 
-    // MOVED TO CONFIG
-    // this.OSMDB = this.OSMDB || new OSM.DB();
-
-    // this.nameNodeHash = this.nameNodeHash || {};
-
-    // this.locationHash = this.locationHash || {};
-
-    // this.nameWayHash = this.nameWayHash || {};
-
-    // this.osmStr = new classes._osmStr(this.OSMDB);
-
-    // this.osmFile = this.osmFile || path.resolve(this.DATA_FOLDER, this.fingerprintOSM());
-
-    // this.extractedFile = this.extractedFile || path.resolve([this.osmFile, this.fingerprintExtract].join('_'));
-
-    // this.preparedFile = this.preparedFile || path.resolve([this.osmFile, this.fingerprintExtract, this.fingerprintPrepare].join('_'));
-
     this.writeOSM = (callback) => {
         if (!fs.existsSync(this.DATA_FOLDER)) fs.mkdirSync(this.DATA_FOLDER);
         var osmPath = path.resolve(this.DATA_FOLDER, util.format('%s.osm', this.osmFile));
         if (!fs.existsSync(osmPath)) {
-            fs.writeFile(osmPath, this.osmStr.xml, callback);
+            fs.writeFile(osmPath, this.OSMDB.toXML(), callback);
         } else callback();
     }
 
@@ -217,6 +184,7 @@ module.exports = function () {
     }
 
     this.extractData = (callback) => {
+        console.log('extract');
         this.logPreprocessInfo();
         this.log(util.format('== Extracting %s.osm...', this.osmFile), 'preprocess');
         // TODO replace with lib?? or just w runBin cmd
@@ -224,13 +192,13 @@ module.exports = function () {
             this.LOAD_LIBRARIES, this.BIN_PATH, this.osmFile, this.extractArgs || '', this.PROFILES_PATH, this.profile, this.PREPROCESS_LOG_FILE), (err, stdout, stderr) => {
             if (err) {
                 this.log(util.format('*** Exited with code %d', err.code), 'preprocess');
-                throw new this.ExtractError(err.code, util.format('osrm-extract exited with code %d', err.code));
+                return callback(this.ExtractError(err.code, util.format('osrm-extract exited with code %d', err.code)));
             }
 
             ['osrm','osrm.names','osrm.restrictions','osrm.ebg','osrm.enw','osrm.edges','osrm.fileIndex','osrm.geometry','osrm.nodes','osrm.ramIndex'].forEach((file) => {
                 this.log(util.format('Renaming %s.%s to %s.%s', this.osmFile, file, this.extractedFile, file), 'preprocess');
                 fs.rename([this.osmFile, file].join('.'), [this.extractedFile, file].join('.'), (err) => {
-                    if (err) throw new this.FileError(null, 'failed to rename data file after extracting');
+                    if (err) return callback(this.FileError(null, 'failed to rename data file after extracting'));
                 });
             });
 
@@ -246,13 +214,13 @@ module.exports = function () {
             this.LOAD_LIBRARIES, this.BIN_PATH, this.extractedFile, this.PROFILES_PATH, this.profile, this.PREPROCESS_LOG_FILE), (err, stdout, stderr) => {
             if (err) {
                 this.log(util.format('*** Exited with code %d', err.code), 'preprocess');
-                throw new this.PrepareError(err.code, util.format('osrm-prepare exited with code %d', err.code));
+                return callback(this.PrepareError(err.code, util.format('osrm-prepare exited with code %d', err.code)));
             }
 
             ['osrm.hsgr','osrm.fileIndex','osrm.geometry','osrm.nodes','osrm.ramIndex','osrm.core','osrm.edges'].forEach((file) => {
                 this.log(util.format('Renaming %s.%s to %s.%s', this.extractedFile, file, this.preparedFile, file), 'preprocess');
                 fs.rename([this.extractedFile, file].join('.'), [this.preparedFile, file].join('.'), (err) => {
-                    if (err) throw new this.FileError(null, 'failed to rename data file after preparing.');
+                    if (err) return callback(this.FileError(null, 'failed to rename data file after preparing.'));
                 });
             });
 
@@ -262,7 +230,7 @@ module.exports = function () {
                 fs.createReadStream([this.extractedFile, file].join('.'))
                     .pipe(fs.createWriteStream([this.preparedFile, file].join('.')))
                     .on('error', (err) => {
-                        throw new this.FileError(null, 'failed to copy data after preparing.');
+                        return callback(this.FileError(null, 'failed to copy data after preparing.'));
                     });
             });
 
