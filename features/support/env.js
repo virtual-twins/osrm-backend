@@ -81,6 +81,7 @@ module.exports = function () {
     this.logTime = (cmd) => {
         var d = new Date();
         console.log(util.format('[%d-%d-%d %d:%d:%d:%d] %s'), d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds(), cmd);
+        // TODO need to fix date formats -- this prints e.g. 2016-3-5 rt 2016-03-05
         // TODO i think this should be console... but maybe other log? rb had 'puts'
     }
 

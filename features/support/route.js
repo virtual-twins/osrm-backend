@@ -115,7 +115,7 @@ module.exports = function () {
     }
 
     this.gotRoute = (response) => {
-        if (response.code === '200' && response.body.length) {
+        if (response.statusCode === 200 && response.body.length) {
             var json = JSON.parse(response.body);
             if (json.status === 200) return this.wayList(json.route_instructions).length > 0;
         }
@@ -123,18 +123,18 @@ module.exports = function () {
     }
 
     this.routeStatus = (response) => {
-        if (response.code === '200' && response.body.length) {
+        if (response.statusCode === 200 && response.body.length) {
             var json = JSON.parse(response.body);
             return json.status;
-        } else return 'HTTP ' + response.code;
+        } else return 'HTTP ' + response.statusCode;
     }
 
     this.extractInstructionList = (instructions, index, postfix) => {
         postfix = postfix || null;
         if (instructions) {
-            return instructions.filter(r => r[0].toString !== this.DESTINATION_REACHED)
-                .map(r => r.index)
-                .map(r => (!r || r == '') ? '""' : '' + r + postfix)
+            return instructions.filter(r => r[0].toString() !== this.DESTINATION_REACHED.toString())
+                .map(r => r[index])
+                .map(r => (!r || r == '') ? '""' : '' + r + (postfix || ''))
                 .join(',');
         }
     }

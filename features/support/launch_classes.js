@@ -17,9 +17,7 @@ var OSRMBaseLoader = class {
         var limit = Timeout(this.scope.LAUNCH_TIMEOUT, { err: this.scope.RoutedError('Launching osrm-routed timed out.') });
 
         var runLaunch = (cb) => {
-            console.log("RUNNING LAUNCH");
             this.osrmUp(() => {
-                console.log("IS UP");
                 this.waitForConnection(cb);
             });
         };
@@ -37,17 +35,22 @@ var OSRMBaseLoader = class {
         runShutdown(limit((e) => { if (e) throw e; }));
     }
 
-    osrmUp (callback) {
-        // TODO i feel super dubious about this
-        console.log('hello? HELLOOOOO?');
-        callback(true);
-        // if (this.pid) return !!waitpid(this.pid);
+    osrmIsRunning () {
+        return !!this.pid && this.child && !this.child.killed;
     }
 
     osrmDown (callback) {
-        // TODO less but still dubious
-        if (this.pid) process.kill(this.pid, this.scope.TERMSIGNAL);
-        callback();
+        if (this.pid) {
+            process.kill(this.pid, this.scope.TERMSIGNAL);
+            this.waitForShutdown(callback);
+            this.pid = null;
+        } else callback(true);
+        // // TODO less but still dubious
+        // console.log("BEFORE KILL", this.child.killed);
+
+        // if (this.pid) process.kill(this.pid, this.scope.TERMSIGNAL);
+        // console.log("AFTER KILL", this.child.killed);
+        // callback();
     }
 
     kill () {
@@ -60,25 +63,21 @@ var OSRMBaseLoader = class {
             host: '127.0.0.1'
         })
             .on('connect', (c) => {
-                console.log("HEY HEY< CONNECTED");
                 callback();
             })
             .on('error', (e) => {
-                console.log('errrrrr error', e);
                 setTimeout(callback, 100);
             });
     }
 
     waitForShutdown (callback) {
-        // TODO i'm dubious ab this too
-        var up = this.osrmUp(),
-            check = () => {
-                up = this.osrmUp();
+        var check = () => {
+            // TODO this isn't working -- i think process is ending before the timeout
+                if (!this.osrmIsRunning()) callback();
             };
-        while (up) {
-            setTimeout(check, 100);
-        }
-        callback();
+        setTimeout(check, 100);
+
+        // TODO I don't think the shutdown timeout is working -- managed to OOM this after ~20-30 seconds w a bad while loop
     }
 }
 
@@ -97,10 +96,8 @@ var OSRMDirectLoader = class extends OSRMBaseLoader {
     }
 
     osrmUp (callback) {
-        console.log("HELLO IS UP");
         if (this.pid) return callback();
         var writeToLog = (data) => {
-            console.error('ACK', data.toString());
             fs.appendFileSync(this.scope.OSRM_ROUTED_LOG_FILE, data);
         }
 
@@ -130,16 +127,13 @@ var OSRMDatastoreLoader = class extends OSRMBaseLoader {
     }
 
     osrmUp (callback) {
-        // TODO 'return if osrm_up?'
-        console.log("HELLOOOOOO IS UP");
         if (this.pid) return callback();
         var writeToLog = (data) => {
-            console.error('ACK', data.toString());
             fs.appendFileSync(this.scope.OSRM_ROUTED_LOG_FILE, data);
         }
 
         var child = spawn(util.format('%s%s/osrm-routed', this.scope.LOAD_LIBRARIES, this.scope.BIN_PATH), ['--shared-memory=1', util.format('-p%d', this.scope.OSRM_PORT)], {detached: true});
-        console.log(child);
+        this.child = child;
         this.pid = child.pid;
         child.stdout.on('data', writeToLog);
         child.stderr.on('data', writeToLog);
@@ -158,7 +152,6 @@ module.exports = {
         }
 
         load (inputFile, block, callback) {
-            console.log("LOAD CALLED")
             var method = this.scope.loadMethod,
                 loader;
             if (method === 'datastore') {
@@ -174,6 +167,7 @@ module.exports = {
 
         shutdown () {
             if (!this.loader) {
+                // TODO: ??
                 console.error('what there is no loader?');
             }
             this.loader.shutdown();

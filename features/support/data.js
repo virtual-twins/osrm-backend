@@ -184,7 +184,6 @@ module.exports = function () {
     }
 
     this.extractData = (callback) => {
-        console.log('extract');
         this.logPreprocessInfo();
         this.log(util.format('== Extracting %s.osm...', this.osmFile), 'preprocess');
         // TODO replace with lib?? or just w runBin cmd
@@ -207,7 +206,6 @@ module.exports = function () {
     }
 
     this.prepareData = (callback) => {
-        console.log('prepare');
         this.logPreprocessInfo();
         this.log(util.format('== Preparing %s.osm...', this.extractedFile), 'preprocess');
         exec(util.format('%s%s/osrm-prepare %s.osrm  --profile %s/%s.lua >>%s 2>&1',

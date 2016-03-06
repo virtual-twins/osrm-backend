@@ -12,7 +12,6 @@ module.exports = function () {
     }
 
     this.sendRequest = (baseUri, parameters, callback) => {
-        console.log(this.OSRM_TIMEOUT)
         var limit = Timeout(this.OSRM_TIMEOUT, { err: { statusCode: 408 } });
 
         var runRequest = () => {
@@ -27,8 +26,6 @@ module.exports = function () {
                 url: uriString          // TODO is this right? or does it need w/o params?
             } : uriString;
 
-            console.log(options)
-
             request(options, (err, res, body) => {
                 if (err && err.code === 'ECONNREFUSED') {           // TODO is this the code? or sth else?
                     throw new Error('*** osrm-routed is not running.');
@@ -42,7 +39,6 @@ module.exports = function () {
 
         runRequest(limit((err, res, body) => {
             if (err) {
-                console.log('IN ERR', err, res, body)
                 if (err.statusCode === 408)
                     return callback(this.RoutedError('*** osrm-routed did not respond'));
                 else if (err.code === 'ECONNREFUSED')       // TODO is this right?
