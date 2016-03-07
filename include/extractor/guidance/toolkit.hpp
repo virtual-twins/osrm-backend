@@ -249,10 +249,11 @@ inline double angularDeviation(const double angle, const double from)
     return std::min(360 - deviation, deviation);
 }
 
-inline double getAngularPenalty(const double angle, TurnInstruction instruction)
+inline double getAngularPenalty(const double angle, DirectionModifier modifier)
 {
+    //these are not aligned with getTurnDirection but represent an ideal center
     const double center[] = {0, 45, 90, 135, 180, 225, 270, 315};
-    return angularDeviation(center[static_cast<int>(instruction.direction_modifier)], angle);
+    return angularDeviation(center[static_cast<int>(modifier)], angle);
 }
 
 inline double getTurnConfidence(const double angle, TurnInstruction instruction)
@@ -262,8 +263,8 @@ inline double getTurnConfidence(const double angle, TurnInstruction instruction)
     if (!isBasic(instruction.type) || instruction.direction_modifier == DirectionModifier::UTurn)
         return 1.0;
 
-    const double deviations[] = {0, 45, 50, 35, 10, 35, 50, 45};
-    const double difference = getAngularPenalty(angle, instruction);
+    const double deviations[] = {0, 45, 50, 30, 20, 30, 50, 45};
+    const double difference = getAngularPenalty(angle, instruction.direction_modifier);
     const double max_deviation = deviations[static_cast<int>(instruction.direction_modifier)];
     return 1.0 - (difference / max_deviation) * (difference / max_deviation);
 }
@@ -281,7 +282,7 @@ inline DirectionModifier getTurnDirection(const double angle)
         return DirectionModifier::Right;
     if (angle >= 140 && angle < 170)
         return DirectionModifier::SlightRight;
-    if (angle >= 170 && angle <= 190)
+    if (angle >= 165 && angle <= 195)
         return DirectionModifier::Straight;
     if (angle > 190 && angle <= 220)
         return DirectionModifier::SlightLeft;

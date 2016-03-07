@@ -24,7 +24,6 @@ const double constexpr STRAIGHT_ANGLE = 180.;
 const double constexpr MAXIMAL_ALLOWED_NO_TURN_DEVIATION = 2.;
 // angle that lies between two nearly indistinguishable roads
 const double constexpr NARROW_TURN_ANGLE = 35.;
-const double constexpr WELL_DISTINCT_ANGLE = 50;
 // angle difference that can be classified as straight, if its the only narrow turn
 const double constexpr FUZZY_ANGLE_DIFFERENCE = 15.;
 const double constexpr DISTINCTION_RATIO = 2;
@@ -1068,61 +1067,184 @@ std::vector<TurnCandidate> TurnAnalysis::handleFourWayTurn(
 {
     (void)from;
     static int fallback_count = 0;
-    // basic turn, or slightly rotated basic turn, has straight ANGLE
-    if (angularDeviation(turn_candidates[2].angle, STRAIGHT_ANGLE) < FUZZY_ANGLE_DIFFERENCE &&
-        angularDeviation(turn_candidates[0].angle, turn_candidates[1].angle) > NARROW_TURN_ANGLE &&
+    auto first_direction = getTurnDirection(turn_candidates[1].angle);
+    auto second_direction = getTurnDirection(turn_candidates[2].angle);
+    auto third_direction = getTurnDirection(turn_candidates[3].angle);
+
+    const auto countDeviatingTurns = [](const std::vector<TurnCandidate> &turn_candidates)
+    {
+        return (angularDeviation(turn_candidates[1].angle, 90) > FUZZY_ANGLE_DIFFERENCE) +
+               (angularDeviation(turn_candidates[2].angle, 180) > FUZZY_ANGLE_DIFFERENCE) +
+               (angularDeviation(turn_candidates[3].angle, 270) > FUZZY_ANGLE_DIFFERENCE);
+    };
+
+    // Intersection possible to handle as normal 4 way turn, well differentiated and nearly four-way
+    if (angularDeviation(turn_candidates[0].angle, turn_candidates[1].angle) > NARROW_TURN_ANGLE &&
         angularDeviation(turn_candidates[1].angle, turn_candidates[2].angle) > NARROW_TURN_ANGLE &&
         angularDeviation(turn_candidates[2].angle, turn_candidates[3].angle) > NARROW_TURN_ANGLE &&
-        angularDeviation(turn_candidates[3].angle, turn_candidates[0].angle) > NARROW_TURN_ANGLE)
+        angularDeviation(turn_candidates[3].angle, turn_candidates[0].angle) > NARROW_TURN_ANGLE &&
+        angularDeviation(turn_candidates[1].angle, 90) < NARROW_TURN_ANGLE &&
+        angularDeviation(turn_candidates[2].angle, 180) < NARROW_TURN_ANGLE &&
+        angularDeviation(turn_candidates[3].angle, 270) < NARROW_TURN_ANGLE)
     {
-        { // Right
-            const auto type = findBasicTurnType(via_edge, turn_candidates[1]);
-            turn_candidates[1].instruction = {type, DirectionModifier::Right};
-        }
-        { // Straight
-            turn_candidates[2].instruction =
-                getInstructionForObvious(turn_candidates.size(), via_edge, turn_candidates[2]);
-        }
-        { // Left
-            const auto type = findBasicTurnType(via_edge, turn_candidates[3]);
-            turn_candidates[3].instruction = {type, DirectionModifier::Left};
-        }
+        turn_candidates[1].instruction = {findBasicTurnType(via_edge, turn_candidates[1]),
+                                          DirectionModifier::Right};
+        turn_candidates[2].instruction =
+            getInstructionForObvious(turn_candidates.size(), via_edge, turn_candidates[2]);
+        turn_candidates[3].instruction = {findBasicTurnType(via_edge, turn_candidates[3]),
+                                          DirectionModifier::Left};
     }
-    // well differentiated turns
-    else if (angularDeviation(turn_candidates[1].angle, turn_candidates[2].angle) >
-                 WELL_DISTINCT_ANGLE &&
-             angularDeviation(turn_candidates[2].angle, turn_candidates[3].angle) >
-                 WELL_DISTINCT_ANGLE)
+    // conflict-free assignment
+    else if ((first_direction != second_direction ||
+              !(turn_candidates[1].valid && turn_candidates[2].valid)) &&
+             (second_direction != third_direction ||
+              !(turn_candidates[2].valid && turn_candidates[3].valid)))
     {
         for (std::size_t i = 1; i < turn_candidates.size(); ++i)
         {
-            const auto type = findBasicTurnType(via_edge, turn_candidates[i]);
-            turn_candidates[i].instruction = {type, getTurnDirection(turn_candidates[i].angle)};
+            if (!turn_candidates[i].valid)
+                continue;
+
+            if (angularDeviation(turn_candidates[i].angle, STRAIGHT_ANGLE) < FUZZY_ANGLE_DIFFERENCE)
+            {
+                // check if a obvious stright turn
+                if ((angularDeviation(turn_candidates[i].angle,
+                                      turn_candidates[(i + 1) % turn_candidates.size()].angle) >
+                         NARROW_TURN_ANGLE &&
+                     angularDeviation(
+                         turn_candidates[i].angle,
+                         turn_candidates[(i + turn_candidates.size() - 1) % turn_candidates.size()]
+                             .angle) > NARROW_TURN_ANGLE) ||
+                    angularDeviation(turn_candidates[i].angle, STRAIGHT_ANGLE) <
+                        MAXIMAL_ALLOWED_NO_TURN_DEVIATION)
+                {
+                    turn_candidates[i].instruction = getInstructionForObvious(
+                        turn_candidates.size(), via_edge, turn_candidates[i]);
+                }
+                else
+                {
+                    // TODO discuss whether turn-straight / continue straight should be possible.
+                    // What to do here if this occurs
+                    turn_candidates[i].instruction = {
+                        findBasicTurnType(via_edge, turn_candidates[i]),
+                        getTurnDirection(turn_candidates[i].angle)};
+                }
+            }
+            else
+            {
+                turn_candidates[i].instruction = {findBasicTurnType(via_edge, turn_candidates[i]),
+                                                  getTurnDirection(turn_candidates[i].angle)};
+            }
         }
     }
-    //  *     *
-    //  *   *
-    //  * *
-    //  * *
-    //  *   *
-    //  *     *
-    // Two roads at the right side of a street
-    else if (false &&
-             angularDeviation(turn_candidates[3].angle, STRAIGHT_ANGLE) < FUZZY_ANGLE_DIFFERENCE)
+    /*  Conflict with two roads at the right side
+        *     *
+        *   *
+        * *
+        * *
+        *   *
+        *     *
+    */
+    else if (angularDeviation(turn_candidates[3].angle, STRAIGHT_ANGLE) < FUZZY_ANGLE_DIFFERENCE)
     {
-        // currently unhandled
+        turn_candidates[1].instruction = {findBasicTurnType(via_edge, turn_candidates[1]),
+                                          first_direction};
+        turn_candidates[2].instruction = {findBasicTurnType(via_edge, turn_candidates[2]),
+                                          second_direction};
+        turn_candidates[3].instruction = {findBasicTurnType(via_edge, turn_candidates[3]),
+                                          third_direction};
+        if ((first_direction == second_direction && second_direction != third_direction) &&
+            (turn_candidates[1].instruction.type != TurnType::Ramp &&
+             turn_candidates[2].instruction.type != TurnType::Ramp))
+        {
+            turn_candidates[1].instruction.type = TurnType::FirstTurn;
+            turn_candidates[2].instruction.type = TurnType::SecondTurn;
+        }
+        else if ((first_direction != second_direction && second_direction == third_direction) &&
+                 (turn_candidates[2].instruction.type != TurnType::Ramp &&
+                  turn_candidates[3].instruction.type != TurnType::Ramp))
+        {
+            second_direction = forcedShiftCW(second_direction);
+            if (second_direction != first_direction)
+            {
+                turn_candidates[2].instruction.direction_modifier = second_direction;
+            }
+            else
+            {
+                turn_candidates[1].instruction.type = TurnType::FirstTurn;
+                turn_candidates[2].instruction = {TurnType::SecondTurn, second_direction};
+            }
+        }
+        else if (first_direction == second_direction && second_direction == third_direction)
+        {
+            // keep straight angle straigh, both other as first /second slight right
+            turn_candidates[1].instruction = {TurnType::FirstTurn, DirectionModifier::SlightRight};
+            turn_candidates[2].instruction = {TurnType::SecondTurn, DirectionModifier::SlightRight};
+            if (turn_candidates[3].angle > STRAIGHT_ANGLE + MAXIMAL_ALLOWED_NO_TURN_DEVIATION)
+                turn_candidates[3].instruction.direction_modifier = DirectionModifier::SlightLeft;
+        }
     }
-    //  *     *
-    //    *   *
-    //      * *
-    //      * *
-    //    *   *
-    //  *     *
-    // Two roads at the left side of a street
-    else if (false &&
-             angularDeviation(turn_candidates[1].angle, STRAIGHT_ANGLE) < FUZZY_ANGLE_DIFFERENCE)
+    /* Conflict with two roads at the left side
+        *     *
+          *   *
+            * *
+            * *
+          *   *
+        *     *
+    */
+    else if (angularDeviation(turn_candidates[1].angle, STRAIGHT_ANGLE) < FUZZY_ANGLE_DIFFERENCE)
     {
-        // currently unhandled
+        turn_candidates[1].instruction = {findBasicTurnType(via_edge, turn_candidates[1]),
+                                          first_direction};
+        turn_candidates[2].instruction = {findBasicTurnType(via_edge, turn_candidates[2]),
+                                          second_direction};
+        turn_candidates[3].instruction = {findBasicTurnType(via_edge, turn_candidates[3]),
+                                          third_direction};
+        if ((third_direction == second_direction && second_direction != first_direction) &&
+            (turn_candidates[3].instruction.type != TurnType::Ramp &&
+             turn_candidates[2].instruction.type != TurnType::Ramp))
+        {
+            turn_candidates[3].instruction.type = TurnType::FirstTurn;
+            turn_candidates[2].instruction.type = TurnType::SecondTurn;
+        }
+        else if ((third_direction != second_direction && second_direction == first_direction) &&
+                 (turn_candidates[2].instruction.type != TurnType::Ramp &&
+                  turn_candidates[1].instruction.type != TurnType::Ramp))
+        {
+            second_direction = forcedShiftCCW(second_direction);
+            if (second_direction != first_direction)
+            {
+                turn_candidates[2].instruction.direction_modifier = second_direction;
+            }
+            else
+            {
+                turn_candidates[3].instruction.type = TurnType::FirstTurn;
+                turn_candidates[2].instruction = {TurnType::SecondTurn, second_direction};
+            }
+        }
+        else if (first_direction == second_direction && second_direction == third_direction)
+        {
+            // keep straight angle straight, both other as first /second slight right
+            turn_candidates[3].instruction = {TurnType::FirstTurn, DirectionModifier::SlightLeft};
+            turn_candidates[2].instruction = {TurnType::SecondTurn, DirectionModifier::SlightLeft};
+            if (turn_candidates[1].angle < STRAIGHT_ANGLE - MAXIMAL_ALLOWED_NO_TURN_DEVIATION)
+                turn_candidates[1].instruction.direction_modifier = DirectionModifier::SlightRight;
+        }
+    }
+    /* Tripple Fork
+     *   *   *
+       * * *
+         *
+         *
+         *
+         *
+    */
+    else if ((angularDeviation(turn_candidates[1].angle, STRAIGHT_ANGLE) < NARROW_TURN_ANGLE) &&
+             (angularDeviation(turn_candidates[3].angle, STRAIGHT_ANGLE) < NARROW_TURN_ANGLE))
+    {
+
+        if( turn_candidates[1].valid && turn_candidates[2].valid && turn_candidates[3]
+        handle
     }
     else
     {
@@ -2008,25 +2130,51 @@ void TurnAnalysis::assignFork(const EdgeID via_edge,
                               TurnCandidate &center,
                               TurnCandidate &right) const
 {
-    left.instruction = {TurnType::Fork, DirectionModifier::SlightLeft};
-    if (angularDeviation(center.angle, 180) < MAXIMAL_ALLOWED_NO_TURN_DEVIATION)
+    //TODO handle low priority road classes in a reasonable way
+    if (left.valid && center.valid && right.valid)
     {
-        const auto &in_data = node_based_graph.GetEdgeData(via_edge);
-        const auto &out_data = node_based_graph.GetEdgeData(center.eid);
-        if (requiresAnnouncement(in_data, out_data))
+        left.instruction = {TurnType::Fork, DirectionModifier::SlightLeft};
+        if (angularDeviation(center.angle, 180) < MAXIMAL_ALLOWED_NO_TURN_DEVIATION)
         {
-            center.instruction = {TurnType::Fork, DirectionModifier::Straight};
+            const auto &in_data = node_based_graph.GetEdgeData(via_edge);
+            const auto &out_data = node_based_graph.GetEdgeData(center.eid);
+            if (requiresAnnouncement(in_data, out_data))
+            {
+                center.instruction = {TurnType::Fork, DirectionModifier::Straight};
+            }
+            else
+            {
+                center.instruction = {TurnType::Suppressed, DirectionModifier::Straight};
+            }
         }
         else
         {
-            center.instruction = {TurnType::Suppressed, DirectionModifier::Straight};
+            center.instruction = {TurnType::Fork, DirectionModifier::Straight};
         }
+        right.instruction = {TurnType::Fork, DirectionModifier::SlightRight};
+    }
+    else if (left.valid)
+    {
+        if (right.valid)
+            assignFork(via_edge, left, right);
+        else if (center.valid)
+            assignFork(via_edge, left, center);
+        else
+            left.instruction = {findBasicTurnType(via_edge, left), getTurnDirection(left.angle)};
+    }
+    else if (right.valid)
+    {
+        if (center.valid)
+            assignFork(via_edge, center, right);
+        else
+            right.instruction = {findBasicTurnType(via_edge, right), getTurnDirection(right.angle)};
     }
     else
     {
-        center.instruction = {TurnType::Fork, DirectionModifier::Straight};
+        if (center.valid)
+            center.instruction = {findBasicTurnType(via_edge, center),
+                                  getTurnDirection(center.angle)};
     }
-    right.instruction = {TurnType::Fork, DirectionModifier::SlightRight};
 }
 
 } // namespace guidance

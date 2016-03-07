@@ -28,16 +28,23 @@ namespace json
 namespace detail
 {
 
-const constexpr char *modifier_names[] = {"uturn",    "sharp right", "right", "slight right",
-                                          "straight", "slight left", "left",  "sharp left"};
+const constexpr char *modifier_names[] = {"uturn",
+                                          "sharp right",
+                                          "right",
+                                          "slight right",
+                                          "straight",
+                                          "slight left",
+                                          "left",
+                                          "sharp left"};
 
 // translations of TurnTypes. Not all types are exposed to the outside world.
 // invalid types should never be returned as part of the API
 const constexpr char *turn_type_names[] = {
-    "invalid", "no turn",    "waypoint",    "invalid",        "new name",    "continue",
-    "turn",    "merge",      "ramp",        "fork",           "end of road", "roundabout",
-    "invalid", "roundabout", "invalid",     "traffic circle", "invalid",     "traffic circle",
-    "invalid", "invalid",    "restriction", "notification"};
+    "invalid",        "no turn",    "waypoint", "invalid",        "new name",
+    "continue",       "turn",       "turn",     "turn",           "turn",
+    "merge",          "ramp",       "fork",     "end of road",    "roundabout",
+    "invalid",        "roundabout", "invalid",  "traffic circle", "invalid",
+    "traffic circle", "invalid",    "invalid",  "restriction",    "notification"};
 
 // Check whether to include a modifier in the result of the API
 inline bool isValidModifier(const TurnType type, const DirectionModifier modifier)
