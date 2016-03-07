@@ -1,5 +1,7 @@
+var DifferentError = require('./data_classes').TableDiffError;
+
 module.exports = function () {
-    this.diffTables = (expectedTable, actual, options, callback) => {
+    this.diffTables = (expected, actual, options, callback) => {
         options = Object.assign({}, {
             missingRow: true,
             surplusRow: true,
@@ -8,14 +10,8 @@ module.exports = function () {
             misplacedCol: true
         }, options);
 
-        var expected = expectedTable.hashes();
+        var error = new DifferentError(expected, actual);
 
-        expected.forEach((row, i) => {
-            for (var j in row) {
-                if (row[j] !== actual[i][j]) return callback(err);
-            }
-        });
-
-        callback();
+        callback(error.string);
     }
 }

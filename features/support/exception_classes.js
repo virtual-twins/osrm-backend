@@ -6,7 +6,7 @@ var path = require('path');
 
 var OSRMError = class extends Error {
     constructor (process, code, msg, log, lines) {
-        super ();
+        super();
         this.process = process;
         this.code = code;
         this.msg = msg;

@@ -59,7 +59,6 @@ module.exports = function () {
 
                     q.awaitAll((err, actual) => {
                         if (err) return callback(err);
-                        console.log(table.hashes(), actual)
                         this.diffTables(table, actual, {}, callback);
                         // callback(new Error('wrong'))
 
