@@ -76,8 +76,8 @@ std::vector<TurnCandidate> getTurns(const NodeID from,
     for (const auto &candidate : turn_candidates)
     {
         const auto &edge_data = node_based_graph.GetEdgeData(candidate.eid);
-        //only check actual outgoing edges
-        if( edge_data.reversed )
+        // only check actual outgoing edges
+        if (edge_data.reversed)
             continue;
 
         if (edge_data.roundabout)
@@ -380,7 +380,7 @@ std::vector<TurnCandidate> handleFromMotorway(const NodeID from,
         if (turn_candidates.size() == 2)
         {
             // do not announce ramps at the end of a highway
-            turn_candidates[1].instruction = {TurnType::NoTurn,
+            turn_candidates[1].instruction = {TurnType::Suppressed,
                                               getTurnDirection(turn_candidates[1].angle)};
         }
         else if (turn_candidates.size() == 3)
@@ -394,10 +394,10 @@ std::vector<TurnCandidate> handleFromMotorway(const NodeID from,
             {
                 // ending in a passing ramp
                 if (turn_candidates[1].valid)
-                    turn_candidates[1].instruction = {TurnType::NoTurn,
+                    turn_candidates[1].instruction = {TurnType::Suppressed,
                                                       getTurnDirection(turn_candidates[1].angle)};
                 else
-                    turn_candidates[2].instruction = {TurnType::NoTurn,
+                    turn_candidates[2].instruction = {TurnType::Suppressed,
                                                       getTurnDirection(turn_candidates[2].angle)};
             }
         }
@@ -829,7 +829,10 @@ TurnInstruction getInstructionForObvious(const std::size_t num_candidates,
     }
     else
     {
-        return {TurnType::NoTurn, getTurnDirection(candidate.angle)};
+        if (node_based_graph.GetEdgeData(via_edge)
+                .IsCompatibleTo(node_based_graph.GetEdgeData(candidate.eid)))
+            return {TurnType::NoTurn, getTurnDirection(candidate.angle)};
+        return {TurnType::Suppressed, getTurnDirection(candidate.angle)};
     }
 }
 
@@ -865,9 +868,6 @@ std::vector<TurnCandidate> handleTwoWayTurn(const NodeID from,
 
     turn_candidates[1].instruction = getInstructionForObvious(
         turn_candidates.size(), from, via_edge, turn_candidates[1], node_based_graph);
-
-    if (turn_candidates[1].instruction.type == TurnType::Suppressed)
-        turn_candidates[1].instruction.type = TurnType::NoTurn;
 
 #if PRINT_DEBUG_CANDIDATES
     std::cout << "Basic Two Turns Candidates:\n";
@@ -1095,11 +1095,8 @@ std::vector<TurnCandidate> handleThreeWayTurn(const NodeID from,
             node_based_graph.GetEdgeData(turn_candidates[2].eid).name_id};
         if (isObviousOfTwo(turn_candidates[1], turn_candidates[2]))
         {
-            turn_candidates[1].instruction = {
-                (in_name_id != INVALID_NAME_ID || out_names[0] != INVALID_NAME_ID)
-                    ? TurnType::NewName
-                    : TurnType::NoTurn,
-                getTurnDirection(turn_candidates[1].angle)};
+            turn_candidates[1].instruction = getInstructionForObvious(
+                turn_candidates.size(), from, via_edge, turn_candidates[1], node_based_graph);
         }
         else
         {
@@ -1109,11 +1106,8 @@ std::vector<TurnCandidate> handleThreeWayTurn(const NodeID from,
 
         if (isObviousOfTwo(turn_candidates[2], turn_candidates[1]))
         {
-            turn_candidates[2].instruction = {
-                (in_name_id != INVALID_NAME_ID || out_names[1] != INVALID_NAME_ID)
-                    ? TurnType::NewName
-                    : TurnType::NoTurn,
-                getTurnDirection(turn_candidates[2].angle)};
+            turn_candidates[2].instruction = getInstructionForObvious(
+                turn_candidates.size(), from, via_edge, turn_candidates[2], node_based_graph);
         }
         else
         {
