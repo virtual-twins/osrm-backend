@@ -1,4 +1,4 @@
-var DifferentError = require('./data_classes').TableDiffError;
+var DifferentError = require('./exception_classes').TableDiffError;
 
 module.exports = function () {
     this.diffTables = (expected, actual, options, callback) => {

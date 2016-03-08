@@ -45,14 +45,9 @@ var OSRMBaseLoader = class {
             this.waitForShutdown(callback);
             this.pid = null;
         } else callback(true);
-        // // TODO less but still dubious
-        // console.log("BEFORE KILL", this.child.killed);
-
-        // if (this.pid) process.kill(this.pid, this.scope.TERMSIGNAL);
-        // console.log("AFTER KILL", this.child.killed);
-        // callback();
     }
 
+    // TODO is this used?
     kill () {
         if (this.pid) process.kill(this.pid, 'SIGKILL');
     }

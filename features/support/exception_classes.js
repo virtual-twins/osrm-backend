@@ -61,5 +61,63 @@ module.exports = {
         constructor (logFile, msg) {
             super('osrm-routed', null, msg, logFile, 3);
         }
+    },
+
+    TableDiffError: class extends Error {
+        constructor (expected, actual) {
+            super();
+            this.headers = expected.raw()[0];
+            this.expected = expected.hashes();
+            this.actual = actual;
+            this.diff = [];
+            this.hasErrors = false;
+
+            var good = 0, bad = 0;
+
+            this.expected.forEach((row, i) => {
+                var rowError = false;
+
+                for (var j in row) {
+                    if (row[j] != actual[i][j]) {
+                        rowError = true;
+                        this.hasErrors = true;
+                        break;
+                    }
+                }
+
+                console.log(row, actual[i])
+
+
+                if (rowError) {
+                    bad++;
+                    this.diff.push(Object.assign({}, row, {status: 'undefined'}));
+                    this.diff.push(Object.assign({}, actual[i], {status: 'comment'}));
+                } else {
+                    good++;
+                    this.diff.push(row);
+                }
+            });
+
+            console.log('good/bad', good, bad)
+
+        }
+
+        get string () {
+            if (!this.hasErrors) return null;
+
+            var s = ['Tables were not identical:'];
+            s.push(this.headers.map(key => '    ' + key).join(' | '));
+            this.diff.forEach((row) => {
+                var rowString = '| ';
+                this.headers.forEach((header) => {
+                    if (!row.status) rowString += '    ' + row[header] + ' | ';
+                    else if (row.status === 'undefined') rowString += '(-) ' + row[header] + ' | ';
+                    else rowString += '(+) ' + row[header] + ' | ';
+                });
+                rowString += ' |';
+                s.push(rowString);
+            });
+            return s.join('\n') + '\n\nTODO spacing/formatting';
+        }
     }
 }
