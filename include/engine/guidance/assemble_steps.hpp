@@ -62,9 +62,9 @@ std::vector<RouteStep> assembleSteps(const DataFacadeT &facade,
     const auto initial_modifier =
         leg_geometry.locations.size() >= 3
             ? angleToDirectionModifier(util::coordinate_calculation::computeAngle(
+                  source_node.query_location,
                   leg_geometry.locations[0],
-                  leg_geometry.locations[1],
-                  leg_geometry.locations[2]))
+                  leg_geometry.locations[1]))
             : extractor::guidance::DirectionModifier::UTurn;
 
     if (leg_data.size() > 0)
@@ -121,11 +121,11 @@ std::vector<RouteStep> assembleSteps(const DataFacadeT &facade,
 
     BOOST_ASSERT(segment_index == number_of_segments - 1);
     const auto final_modifier =
-        leg_geometry.locations.size() >= 3
+        leg_geometry.locations.size() >= 2
             ? angleToDirectionModifier(util::coordinate_calculation::computeAngle(
-                  leg_geometry.locations[leg_geometry.locations.size() - 3],
                   leg_geometry.locations[leg_geometry.locations.size() - 2],
-                  leg_geometry.locations[leg_geometry.locations.size() - 1]))
+                  leg_geometry.locations[leg_geometry.locations.size() - 1],
+                  target_node.query_location))
             : extractor::guidance::DirectionModifier::UTurn;
     // This step has length zero, the only reason we need it is the target location
     steps.push_back(RouteStep{
