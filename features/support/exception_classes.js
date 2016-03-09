@@ -85,9 +85,6 @@ module.exports = {
                     }
                 }
 
-                console.log(row, actual[i])
-
-
                 if (rowError) {
                     bad++;
                     this.diff.push(Object.assign({}, row, {status: 'undefined'}));
@@ -97,9 +94,6 @@ module.exports = {
                     this.diff.push(row);
                 }
             });
-
-            console.log('good/bad', good, bad)
-
         }
 
         get string () {

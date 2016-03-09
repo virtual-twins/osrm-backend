@@ -10,9 +10,7 @@ module.exports = function () {
         this.reprocess();
         var actual = [];
 
-        console.log("I AM GOING TO LOAD W THE LOADER")
         this.OSRMLoader.load(this, util.format('%s.osrm', this.preparedFile), () => {
-            console.log("HEYYY LOADED and testing routing")
             table.hashes().forEach((row, ri) => {
                 var got,
                     response,
