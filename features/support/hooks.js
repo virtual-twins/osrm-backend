@@ -1,5 +1,3 @@
-// 'use strict';
-
 var Timeout = require('node-timeout');
 
 module.exports = function () {

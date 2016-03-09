@@ -1,5 +1,3 @@
-// 'use strict';
-
 var util = require('util');
 var d3 = require('d3-queue');
 var classes = require('../support/data_classes');

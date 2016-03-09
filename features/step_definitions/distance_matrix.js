@@ -1,12 +1,6 @@
-// 'use strict';
-
 var util = require('util');
-// import OSM from '../support.js/build_osm';
 
 module.exports = function () {
-    // this.World = require('../support/world');
-    // this.World();
-
     this.When(/^I request a travel time matrix I should get$/, (table) => {
         var NO_ROUTE = 2147483647    // MAX_INT
 

@@ -1,11 +1,6 @@
-// 'use strict';
-
 var assert = require('assert');
 
 module.exports = function () {
-    // this.World = require('../support/world');
-    // this.World();
-
     this.When(/^I run "osrm\-routed\s?(.*?)"$/, { timeout: this.SHUTDOWN_TIMEOUT }, (options) => {
         this.runBin('osrm-routed', options);
         // TODO does this timeout work like this? RB version was

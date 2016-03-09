@@ -1,11 +1,6 @@
-// 'use strict';
-
 var assert = require('assert');
 
 module.exports = function () {
-    // this.World = require('../support/world');
-    // this.World();
-
     this.When(/^I request \/(.*)$/, (path) => {
         this.reprocess();
         this.OSRMLoader.load(this, util.format('%s.osrm', this.preparedFile), () => {

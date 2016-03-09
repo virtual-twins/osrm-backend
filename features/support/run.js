@@ -1,5 +1,3 @@
-// 'use strict';
-
 var fs = require('fs');
 var util = require('util');
 var exec = require('child_process').exec;

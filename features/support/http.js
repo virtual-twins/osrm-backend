@@ -1,5 +1,3 @@
-// 'use strict';
-
 var Timeout = require('node-timeout');
 var request = require('request');
 

@@ -1,11 +1,6 @@
-// 'use strict';
-
 var util = require('util');
 
 module.exports = function () {
-    // this.World = require('../support/world');
-    // this.World();
-
     this.When(/^I plan a trip I should get$/, (table) => {
         this.reprocess();
         var actual = [];
