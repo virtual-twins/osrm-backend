@@ -348,6 +348,56 @@ template <typename RTreeT, typename DataFacadeT> class GeospatialQuery
                 coordinates->at(data.u), coordinates->at(data.v), input_coordinate,
                 point_on_segment, ratio);
 
+        const auto translateAngleToLocation = [](const double angle)
+        {
+            if (angle < 20)
+                return RelativeLocation::BEHIND;
+            if (angle < 160)
+                return RelativeLocation::RIGHT;
+            if (angle <= 200)
+                return RelativeLocation::AHEAD;
+            if (angle <= 340)
+                return RelativeLocation::LEFT;
+            return RelativeLocation::BEHIND;
+        };
+
+        const auto findLocation =
+            [translateAngleToLocation](const util::Coordinate base_from,
+                                       const util::Coordinate base_to, const util::Coordinate via,
+                                       const util::Coordinate to)
+        {
+            const auto haversine_via_to = util::coordinate_calculation::haversineDistance(via, to);
+            // we require a minimal deviation from the destination to mark it left/right and limit
+            // it to a maximum of 100m
+            if (haversine_via_to < 3 || haversine_via_to > 100)
+                return RelativeLocation::INVALID;
+
+            const auto haversine_base_from_via =
+                util::coordinate_calculation::haversineDistance(base_from, via);
+            const auto haversine_base_to_via =
+                util::coordinate_calculation::haversineDistance(via, base_to);
+            if (haversine_base_from_via >= haversine_base_to_via)
+            {
+                const double angle = util::coordinate_calculation::computeAngle(base_from, via, to);
+                return translateAngleToLocation(angle);
+            }
+            else if (base_to != via) // else we cannot compute an angle
+            {
+                // angles in this direction might be more accurate but are shifted by 180º
+                const double angle =
+                    util::coordinate_calculation::computeAngle(base_to, via, to) + 180;
+                if (angle > 360)
+                    return translateAngleToLocation(angle - 360);
+                else
+                    return translateAngleToLocation(angle);
+            }
+            // if both points are identical, we cannot compute a relative location
+            return RelativeLocation::INVALID;
+        };
+
+        const RelativeLocation relative_location = findLocation(
+            coordinates->at(data.u), coordinates->at(data.v), point_on_segment, input_coordinate);
+
         // Find the node-based-edge that this belongs to, and directly
         // calculate the forward_weight, forward_offset, reverse_weight, reverse_offset
 
@@ -399,7 +449,7 @@ template <typename RTreeT, typename DataFacadeT> class GeospatialQuery
                                                                reverse_weight,
                                                                reverse_offset,
                                                                point_on_segment,
-                                                               input_coordinate},
+                                                               relative_location},
                                                    current_perpendicular_distance};
 
         return transformed;

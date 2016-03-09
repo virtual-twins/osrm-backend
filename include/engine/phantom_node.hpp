@@ -6,6 +6,7 @@
 
 #include "osrm/coordinate.hpp"
 
+#include <cstdint>
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -14,6 +15,15 @@ namespace osrm
 {
 namespace engine
 {
+
+enum class RelativeLocation : std::uint8_t
+{
+    INVALID,
+    LEFT,
+    AHEAD,
+    RIGHT,
+    BEHIND
+};
 
 struct PhantomNode
 {
@@ -29,7 +39,7 @@ struct PhantomNode
                 bool is_tiny_component,
                 unsigned component_id,
                 util::Coordinate location,
-                util::Coordinate query_location,
+                RelativeLocation query_relative_location,
                 unsigned short fwd_segment_position,
                 extractor::TravelMode forward_travel_mode,
                 extractor::TravelMode backward_travel_mode)
@@ -39,7 +49,7 @@ struct PhantomNode
           forward_packed_geometry_id(forward_packed_geometry_id_),
           reverse_packed_geometry_id(reverse_packed_geometry_id_),
           component{component_id, is_tiny_component}, location(std::move(location)),
-          query_location(std::move(query_location)), fwd_segment_position(fwd_segment_position),
+          query_relative_location(query_relative_location), fwd_segment_position(fwd_segment_position),
           forward_travel_mode(forward_travel_mode), backward_travel_mode(backward_travel_mode)
     {
     }
@@ -49,7 +59,7 @@ struct PhantomNode
           name_id(std::numeric_limits<unsigned>::max()), forward_weight(INVALID_EDGE_WEIGHT),
           reverse_weight(INVALID_EDGE_WEIGHT), forward_offset(0), reverse_offset(0),
           forward_packed_geometry_id(SPECIAL_EDGEID), reverse_packed_geometry_id(SPECIAL_EDGEID),
-          component{INVALID_COMPONENTID, false}, fwd_segment_position(0),
+          component{INVALID_COMPONENTID, false}, query_relative_location(RelativeLocation::INVALID), fwd_segment_position(0),
           forward_travel_mode(TRAVEL_MODE_INACCESSIBLE),
           backward_travel_mode(TRAVEL_MODE_INACCESSIBLE)
     {
@@ -100,7 +110,7 @@ struct PhantomNode
                          int reverse_weight_,
                          int reverse_offset_,
                          const util::Coordinate foot_point,
-                         const util::Coordinate query_location)
+                         const RelativeLocation query_relative_location )
     {
         forward_node_id = other.forward_edge_based_node_id;
         reverse_node_id = other.reverse_edge_based_node_id;
@@ -119,7 +129,7 @@ struct PhantomNode
         component.is_tiny = other.component.is_tiny;
 
         location = foot_point;
-        this->query_location = query_location;
+        this->query_relative_location = query_relative_location;
         fwd_segment_position = other.fwd_segment_position;
 
         forward_travel_mode = other.forward_travel_mode;
@@ -145,7 +155,7 @@ struct PhantomNode
     static_assert(sizeof(ComponentType) == 4, "ComponentType needs to 4 bytes big");
 #endif
     util::Coordinate location;
-    util::Coordinate query_location;
+    RelativeLocation query_relative_location;
     unsigned short fwd_segment_position;
     // note 4 bits would suffice for each,
     // but the saved byte would be padding anyway
@@ -154,7 +164,7 @@ struct PhantomNode
 };
 
 #ifndef _MSC_VER
-static_assert(sizeof(PhantomNode) == 60, "PhantomNode has more padding then expected");
+static_assert(sizeof(PhantomNode) == 56, "PhantomNode has more padding then expected");
 #endif
 
 using PhantomNodePair = std::pair<PhantomNode, PhantomNode>;
