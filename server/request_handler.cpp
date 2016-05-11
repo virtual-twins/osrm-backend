@@ -120,6 +120,10 @@ void RequestHandler::handle_request(const http::request &current_request,
             {
                 // 2xx valid request
                 BOOST_ASSERT(return_code / 100 == 2);
+		if (return_code == 200) 
+		{
+		    json_result.values["status"] = 0;
+		}
             }
         }
         else

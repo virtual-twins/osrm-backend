@@ -57,11 +57,11 @@ static const std::array<int, 19> DOUGLAS_PEUCKER_THRESHOLDS{{
     120,    // z11
     60,     // z12
     45,     // z13
-    36,     // z14
-    20,     // z15
-    8,      // z16
-    6,      // z17
-    4       // z18
+    4,      // z14
+    4,      // z15
+    4,      // z16
+    3,      // z17
+    2       // z18
 }};
 
 class DouglasPeucker

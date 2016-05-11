@@ -169,24 +169,21 @@ template <class DataFacadeT> class MapMatchingPlugin : public BasePlugin
                 });
             candidates.resize(new_end - candidates.begin());
 
-            if (!allow_uturn)
-            {
-                const auto compact_size = candidates.size();
-                for (const auto i : osrm::irange<std::size_t>(0, compact_size))
-                {
-                    // Split edge if it is bidirectional and append reverse direction to end of list
-                    if (candidates[i].phantom_node.forward_node_id != SPECIAL_NODEID &&
-                        candidates[i].phantom_node.reverse_node_id != SPECIAL_NODEID)
-                    {
-                        PhantomNode reverse_node(candidates[i].phantom_node);
-                        reverse_node.forward_node_id = SPECIAL_NODEID;
-                        candidates.push_back(
-                            PhantomNodeWithDistance{reverse_node, candidates[i].distance});
+            const auto compact_size = candidates.size();
+	    for (const auto i : osrm::irange<std::size_t>(0, compact_size))
+	    {
+		// Split edge if it is bidirectional and append reverse direction to end of list
+		if ((!allow_uturn || candidates[i].distance == 0.) &&
+		      candidates[i].phantom_node.forward_node_id != SPECIAL_NODEID &&
+		    candidates[i].phantom_node.reverse_node_id != SPECIAL_NODEID)
+		{
+		    PhantomNode reverse_node(candidates[i].phantom_node);
+		    reverse_node.forward_node_id = SPECIAL_NODEID;
+		    candidates.push_back(PhantomNodeWithDistance{reverse_node, candidates[i].distance});
 
-                        candidates[i].phantom_node.reverse_node_id = SPECIAL_NODEID;
-                    }
-                }
-            }
+		    candidates[i].phantom_node.reverse_node_id = SPECIAL_NODEID;
+		}	      
+	    }
 
             // sort by distance to make pruning effective
             std::sort(candidates.begin(), candidates.end(),

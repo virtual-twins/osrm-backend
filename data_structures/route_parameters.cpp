@@ -175,5 +175,7 @@ void RouteParameters::getCoordinatesFromGeometry(const std::string &geometry_str
 {
     PolylineCompressor pc;
     coordinates = pc.decode_string(geometry_string);
+    uturns.clear();
+    uturns.resize(coordinates.size(), uturn_default);
 }
 

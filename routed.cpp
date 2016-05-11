@@ -106,7 +106,7 @@ int main(int argc, const char *argv[]) try
                 (void)munlockall();
         }
         bool shouldLock = false, couldLock = true;
-    } memoryLocker(lib_config.use_shared_memory);
+    } memoryLocker(true);
 #endif
     SimpleLogger().Write() << "starting up engines, " << OSRM_VERSION;
 

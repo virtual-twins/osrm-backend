@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace
 {
-constexpr static const float COORDINATE_PRECISION = 1000000.f;
+constexpr static const float COORDINATE_PRECISION = 100000.f;
 }
 
 struct FixedPointCoordinate
