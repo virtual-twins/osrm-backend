@@ -17,8 +17,7 @@ namespace engine
 namespace plugins
 {
 
-IsochronePlugin::IsochronePlugin(const std::string base)
-    : base{base}
+IsochronePlugin::IsochronePlugin(const std::string base) : base{base}
 {
 
     // Loads Graph into memory
@@ -69,11 +68,14 @@ Status IsochronePlugin::HandleRequest(const std::shared_ptr<datafacade::BaseData
     auto phantom = phantomnodes.front();
     std::vector<NodeID> forward_id_vector;
 
-    auto source = (*facade).GetUncompressedReverseGeometry(phantom.front().phantom_node.packed_geometry_id).front();
+    auto source =
+        (*facade)
+            .GetUncompressedReverseGeometry(phantom.front().phantom_node.packed_geometry_id)
+            .front();
 
-//    (*facade).GetUncompressedGeometry(phantom.front().phantom_node.reverse_packed_geometry_id,
-//                                   forward_id_vector);
-//    auto source = phantom.;
+    //    (*facade).GetUncompressedGeometry(phantom.front().phantom_node.reverse_packed_geometry_id,
+    //                                   forward_id_vector);
+    //    auto source = phantom.;
 
     IsochroneVector isochroneVector;
     IsochroneVector convexhull;
