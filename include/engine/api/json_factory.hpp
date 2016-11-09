@@ -1,13 +1,7 @@
 #ifndef ENGINE_RESPONSE_OBJECTS_HPP_
 #define ENGINE_RESPONSE_OBJECTS_HPP_
 
-#include "extractor/guidance/turn_instruction.hpp"
 #include "extractor/travel_mode.hpp"
-#include "engine/guidance/leg_geometry.hpp"
-#include "engine/guidance/route.hpp"
-#include "engine/guidance/route_leg.hpp"
-#include "engine/guidance/route_step.hpp"
-#include "engine/guidance/step_maneuver.hpp"
 #include "engine/polyline_compressor.hpp"
 #include "util/coordinate.hpp"
 #include "util/json_container.hpp"
@@ -32,9 +26,6 @@ namespace json
 {
 namespace detail
 {
-
-std::string instructionTypeToString(extractor::guidance::TurnType::Enum type);
-std::string instructionModifierToString(extractor::guidance::DirectionModifier::Enum modifier);
 
 util::json::Array coordinateToLonLat(const util::Coordinate coordinate);
 
@@ -72,23 +63,9 @@ util::json::Object makeGeoJSONGeometry(ForwardIter begin, ForwardIter end)
     return geojson;
 }
 
-util::json::Object makeStepManeuver(const guidance::StepManeuver &maneuver);
-
-util::json::Object makeRouteStep(guidance::RouteStep step,
-                                 boost::optional<util::json::Value> geometry);
-
-util::json::Object makeRoute(const guidance::Route &route,
-                             util::json::Array legs,
-                             boost::optional<util::json::Value> geometry);
-
 util::json::Object
 makeWaypoint(const util::Coordinate location, std::string name, const Hint &hint);
 
-util::json::Object makeRouteLeg(guidance::RouteLeg leg, util::json::Array steps);
-
-util::json::Array makeRouteLegs(std::vector<guidance::RouteLeg> legs,
-                                std::vector<util::json::Value> step_geometries,
-                                std::vector<util::json::Object> annotations);
 }
 }
 } // namespace engine

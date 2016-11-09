@@ -59,13 +59,7 @@ inline unsigned generateServerProgramOptions(const int argc,
                                              int &ip_port,
                                              int &requested_num_threads,
                                              bool &use_shared_memory,
-                                             bool &trial,
-                                             int &max_locations_trip,
-                                             int &max_locations_viaroute,
-                                             int &max_locations_distance_table,
-                                             int &max_locations_map_matching,
-                                             int &max_results_nearest,
-                                             bool &use_isochrone)
+                                             bool &trial)
 {
     using boost::program_options::value;
     using boost::filesystem::path;
@@ -90,25 +84,8 @@ inline unsigned generateServerProgramOptions(const int argc,
          "Number of threads to use") //
         ("shared-memory,s",
          value<bool>(&use_shared_memory)->implicit_value(true)->default_value(false),
-         "Load data from shared memory") //
-        ("isochrone,I",
-         value<bool>(&use_isochrone)->implicit_value(true)->default_value(false),
-         "Load the isochrone plugin") //
-        ("max-viaroute-size",
-         value<int>(&max_locations_viaroute)->default_value(500),
-         "Max. locations supported in viaroute query") //
-        ("max-trip-size",
-         value<int>(&max_locations_trip)->default_value(100),
-         "Max. locations supported in trip query") //
-        ("max-table-size",
-         value<int>(&max_locations_distance_table)->default_value(100),
-         "Max. locations supported in distance table query") //
-        ("max-matching-size",
-         value<int>(&max_locations_map_matching)->default_value(100),
-         "Max. locations supported in map matching query") //
-        ("max-nearest-size",
-         value<int>(&max_results_nearest)->default_value(100),
-         "Max. results supported in nearest query");
+         "Load data from shared memory");
+
 
     // hidden options, will be allowed on command line, but will not be shown to the user
     boost::program_options::options_description hidden_options("Hidden options");
@@ -193,13 +170,7 @@ int main(int argc, const char *argv[]) try
                                                               ip_port,
                                                               requested_thread_num,
                                                               config.use_shared_memory,
-                                                              trial_run,
-                                                              config.max_locations_trip,
-                                                              config.max_locations_viaroute,
-                                                              config.max_locations_distance_table,
-                                                              config.max_locations_map_matching,
-                                                              config.max_results_nearest,
-                                                              config.use_isochrone);
+                                                              trial_run);
     if (init_result == INIT_OK_DO_NOT_START_ENGINE)
     {
         return EXIT_SUCCESS;
@@ -230,11 +201,6 @@ int main(int argc, const char *argv[]) try
                 util::SimpleLogger().Write(logWARNING) << config.storage_config.file_index_path
                                                        << " is not found";
             }
-            if (!boost::filesystem::is_regular_file(config.storage_config.hsgr_data_path))
-            {
-                util::SimpleLogger().Write(logWARNING) << config.storage_config.hsgr_data_path
-                                                       << " is not found";
-            }
             if (!boost::filesystem::is_regular_file(config.storage_config.nodes_data_path))
             {
                 util::SimpleLogger().Write(logWARNING) << config.storage_config.nodes_data_path
@@ -245,39 +211,9 @@ int main(int argc, const char *argv[]) try
                 util::SimpleLogger().Write(logWARNING) << config.storage_config.edges_data_path
                                                        << " is not found";
             }
-            if (!boost::filesystem::is_regular_file(config.storage_config.core_data_path))
-            {
-                util::SimpleLogger().Write(logWARNING) << config.storage_config.core_data_path
-                                                       << " is not found";
-            }
             if (!boost::filesystem::is_regular_file(config.storage_config.geometries_path))
             {
                 util::SimpleLogger().Write(logWARNING) << config.storage_config.geometries_path
-                                                       << " is not found";
-            }
-            if (!boost::filesystem::is_regular_file(config.storage_config.timestamp_path))
-            {
-                util::SimpleLogger().Write(logWARNING) << config.storage_config.timestamp_path
-                                                       << " is not found";
-            }
-            if (!boost::filesystem::is_regular_file(config.storage_config.datasource_names_path))
-            {
-                util::SimpleLogger().Write(logWARNING)
-                    << config.storage_config.datasource_names_path << " is not found";
-            }
-            if (!boost::filesystem::is_regular_file(config.storage_config.datasource_indexes_path))
-            {
-                util::SimpleLogger().Write(logWARNING)
-                    << config.storage_config.datasource_indexes_path << " is not found";
-            }
-            if (!boost::filesystem::is_regular_file(config.storage_config.names_data_path))
-            {
-                util::SimpleLogger().Write(logWARNING) << config.storage_config.names_data_path
-                                                       << " is not found";
-            }
-            if (!boost::filesystem::is_regular_file(config.storage_config.properties_path))
-            {
-                util::SimpleLogger().Write(logWARNING) << config.storage_config.properties_path
                                                        << " is not found";
             }
         }

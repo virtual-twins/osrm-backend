@@ -55,6 +55,12 @@ namespace engine
 namespace datafacade
 {
 
+struct HeapData
+{
+    NodeID parent;
+    HeapData(NodeID p) : parent(p) {}
+};
+
 class InternalDataFacade final : public BaseDataFacade
 {
 
@@ -67,11 +73,16 @@ class InternalDataFacade final : public BaseDataFacade
         util::StaticRTree<RTreeLeaf, util::ShM<util::Coordinate, false>::vector, false>;
     using InternalGeospatialQuery = GeospatialQuery<InternalRTree, BaseDataFacade>;
 
+    // RR changes
+    using SimpleGraph = util::StaticGraph<typename super::EdgeData>;
+    using SimpleEdge = SimpleGraph::InputEdge;
+    using QueryHeap = osrm::util::
+        BinaryHeap<NodeID, NodeID, int, HeapData, osrm::util::UnorderedMapStorage<NodeID, int>>;
+
     InternalDataFacade() {}
 
     unsigned m_check_sum;
-    unsigned m_number_of_nodes;
-    std::unique_ptr<QueryGraph> m_query_graph;
+    //    std::unique_ptr<QueryGraph> m_query_graph;
     std::string m_timestamp;
 
     util::ShM<util::Coordinate, false>::vector m_coordinate_list;
@@ -92,6 +103,11 @@ class InternalDataFacade final : public BaseDataFacade
     util::ShM<std::uint32_t, false>::vector m_lane_description_offsets;
     util::ShM<extractor::guidance::TurnLaneType::Mask, false>::vector m_lane_description_masks;
     extractor::ProfileProperties m_profile_properties;
+    // RR changes
+    std::shared_ptr<SimpleGraph> m_query_graph;
+    std::vector<osrm::extractor::QueryNode> coordinate_list;
+
+    std::size_t m_number_of_nodes;
 
     std::unique_ptr<InternalRTree> m_static_rtree;
     std::unique_ptr<InternalGeospatialQuery> m_geospatial_query;
@@ -99,8 +115,6 @@ class InternalDataFacade final : public BaseDataFacade
     boost::filesystem::path file_index_path;
     util::RangeTable<16, false> m_name_table;
 
-    // bearing classes by node based node
-    util::ShM<BearingClassID, false>::vector m_bearing_class_id_table;
     // entry class IDs by edge based egde
     util::ShM<EntryClassID, false>::vector m_entry_class_id_list;
     // the look-up table for entry classes. An entry class lists the possibility of entry for all
@@ -111,61 +125,49 @@ class InternalDataFacade final : public BaseDataFacade
     util::RangeTable<16, false> m_bearing_ranges_table;
     util::ShM<DiscreteBearing, false>::vector m_bearing_values_table;
 
-    void LoadProfileProperties(const boost::filesystem::path &properties_path)
+    void LoadGraph(const boost::filesystem::path &base_path)
     {
-        boost::filesystem::ifstream in_stream(properties_path);
-        if (!in_stream)
+        std::ifstream input_stream(base_path.string(), std::ifstream::in | std::ifstream::binary);
+        if (!input_stream.is_open())
         {
-            throw util::exception("Could not open " + properties_path.string() + " for reading.");
+            throw util::exception("Cannot open osrm file");
         }
 
-        in_stream.read(reinterpret_cast<char *>(&m_profile_properties),
-                       sizeof(m_profile_properties));
-    }
+        // load graph data
+        std::vector<extractor::NodeBasedEdge> edge_list;
+        std::vector<NodeID> traffic_light_node_list;
+        std::vector<NodeID> barrier_node_list;
+        std::vector<SimpleEdge> graph_edge_list;
 
-    void LoadLaneTupelIdPairs(const boost::filesystem::path &lane_data_path)
-    {
-        boost::filesystem::ifstream in_stream(lane_data_path);
-        if (!in_stream)
+        m_number_of_nodes = util::loadNodesFromFile(
+            input_stream, barrier_node_list, traffic_light_node_list, coordinate_list);
+
+        util::loadEdgesFromFile(input_stream, edge_list);
+        traffic_light_node_list.clear();
+        traffic_light_node_list.shrink_to_fit();
+
+        // Building an node-based graph
+        for (const auto &input_edge : edge_list)
         {
-            throw util::exception("Could not open " + lane_data_path.string() + " for reading.");
+            if (input_edge.source == input_edge.target)
+            {
+                continue;
+            }
+            // forward edge
+            graph_edge_list.emplace_back(
+                input_edge.source, input_edge.target, input_edge.weight, input_edge.forward);
+            // backward edge
+            graph_edge_list.emplace_back(
+                input_edge.target, input_edge.source, input_edge.weight, input_edge.backward);
         }
-        std::uint64_t size;
-        in_stream.read(reinterpret_cast<char *>(&size), sizeof(size));
-        m_lane_tupel_id_pairs.resize(size);
-        in_stream.read(reinterpret_cast<char *>(&m_lane_tupel_id_pairs[0]),
-                       sizeof(m_lane_tupel_id_pairs) * size);
-    }
 
-    void LoadTimestamp(const boost::filesystem::path &timestamp_path)
-    {
-        util::SimpleLogger().Write() << "Loading Timestamp";
-        boost::filesystem::ifstream timestamp_stream(timestamp_path);
-        if (!timestamp_stream)
-        {
-            throw util::exception("Could not open " + timestamp_path.string() + " for reading.");
-        }
-        getline(timestamp_stream, m_timestamp);
-    }
+        tbb::parallel_sort(graph_edge_list.begin(), graph_edge_list.end());
+        //        m_query_graph = std::unique_ptr<SimpleGraph>(new SimpleGraph(m_number_of_nodes,
+        //        graph_edge_list));
+        m_query_graph = std::make_shared<SimpleGraph>(m_number_of_nodes, graph_edge_list);
 
-    void LoadGraph(const boost::filesystem::path &hsgr_path)
-    {
-        util::ShM<QueryGraph::NodeArrayEntry, false>::vector node_list;
-        util::ShM<QueryGraph::EdgeArrayEntry, false>::vector edge_list;
-
-        util::SimpleLogger().Write() << "loading graph from " << hsgr_path.string();
-
-        m_number_of_nodes = readHSGRFromStream(hsgr_path, node_list, edge_list, &m_check_sum);
-
-        BOOST_ASSERT_MSG(0 != node_list.size(), "node list empty");
-        // BOOST_ASSERT_MSG(0 != edge_list.size(), "edge list empty");
-        util::SimpleLogger().Write() << "loaded " << node_list.size() << " nodes and "
-                                     << edge_list.size() << " edges";
-        m_query_graph = std::unique_ptr<QueryGraph>(new QueryGraph(node_list, edge_list));
-
-        BOOST_ASSERT_MSG(0 == node_list.size(), "node list not flushed");
-        BOOST_ASSERT_MSG(0 == edge_list.size(), "edge list not flushed");
-        util::SimpleLogger().Write() << "Data checksum is " << m_check_sum;
+        graph_edge_list.clear();
+        graph_edge_list.shrink_to_fit();
     }
 
     void LoadNodeAndEdgeInformation(const boost::filesystem::path &nodes_file,
@@ -261,41 +263,6 @@ class InternalDataFacade final : public BaseDataFacade
         }
     }
 
-    void LoadDatasourceInfo(const boost::filesystem::path &datasource_names_file,
-                            const boost::filesystem::path &datasource_indexes_file)
-    {
-        boost::filesystem::ifstream datasources_stream(datasource_indexes_file, std::ios::binary);
-        if (!datasources_stream)
-        {
-            throw util::exception("Could not open " + datasource_indexes_file.string() +
-                                  " for reading!");
-        }
-        BOOST_ASSERT(datasources_stream);
-
-        std::uint64_t number_of_datasources = 0;
-        datasources_stream.read(reinterpret_cast<char *>(&number_of_datasources),
-                                sizeof(number_of_datasources));
-        if (number_of_datasources > 0)
-        {
-            m_datasource_list.resize(number_of_datasources);
-            datasources_stream.read(reinterpret_cast<char *>(&(m_datasource_list[0])),
-                                    number_of_datasources * sizeof(uint8_t));
-        }
-
-        boost::filesystem::ifstream datasourcenames_stream(datasource_names_file, std::ios::binary);
-        if (!datasourcenames_stream)
-        {
-            throw util::exception("Could not open " + datasource_names_file.string() +
-                                  " for reading!");
-        }
-        BOOST_ASSERT(datasourcenames_stream);
-        std::string name;
-        while (std::getline(datasourcenames_stream, name))
-        {
-            m_datasource_names.push_back(std::move(name));
-        }
-    }
-
     void LoadRTree()
     {
         BOOST_ASSERT_MSG(!m_coordinate_list.empty(), "coordinates must be loaded before r-tree");
@@ -303,81 +270,6 @@ class InternalDataFacade final : public BaseDataFacade
         m_static_rtree.reset(new InternalRTree(ram_index_path, file_index_path, m_coordinate_list));
         m_geospatial_query.reset(
             new InternalGeospatialQuery(*m_static_rtree, m_coordinate_list, *this));
-    }
-
-    void LoadLaneDescriptions(const boost::filesystem::path &lane_description_file)
-    {
-        if (!util::deserializeAdjacencyArray(lane_description_file.string(),
-                                             m_lane_description_offsets,
-                                             m_lane_description_masks))
-            util::SimpleLogger().Write(logWARNING) << "Failed to read turn lane descriptions from "
-                                                   << lane_description_file.string();
-    }
-
-    void LoadStreetNames(const boost::filesystem::path &names_file)
-    {
-        boost::filesystem::ifstream name_stream(names_file, std::ios::binary);
-
-        name_stream >> m_name_table;
-
-        unsigned number_of_chars = 0;
-        name_stream.read((char *)&number_of_chars, sizeof(unsigned));
-        BOOST_ASSERT_MSG(0 != number_of_chars, "name file broken");
-        m_names_char_list.resize(number_of_chars + 1); //+1 gives sentinel element
-        name_stream.read((char *)&m_names_char_list[0], number_of_chars * sizeof(char));
-        if (0 == m_names_char_list.size())
-        {
-            util::SimpleLogger().Write(logWARNING) << "list of street names is empty";
-        }
-    }
-
-    void LoadIntersectionClasses(const boost::filesystem::path &intersection_class_file)
-    {
-        std::ifstream intersection_stream(intersection_class_file.string(), std::ios::binary);
-        if (!intersection_stream)
-            throw util::exception("Could not open " + intersection_class_file.string() +
-                                  " for reading.");
-
-        if (!util::readAndCheckFingerprint(intersection_stream))
-            throw util::exception("Fingeprint does not match in " +
-                                  intersection_class_file.string());
-
-        {
-            util::SimpleLogger().Write(logINFO) << "Loading Bearing Class IDs";
-            std::vector<BearingClassID> bearing_class_id;
-            if (!util::deserializeVector(intersection_stream, bearing_class_id))
-                throw util::exception("Reading from " + intersection_class_file.string() +
-                                      " failed.");
-
-            m_bearing_class_id_table.resize(bearing_class_id.size());
-            std::copy(
-                bearing_class_id.begin(), bearing_class_id.end(), &m_bearing_class_id_table[0]);
-        }
-        {
-            util::SimpleLogger().Write(logINFO) << "Loading Bearing Classes";
-            // read the range table
-            intersection_stream >> m_bearing_ranges_table;
-            std::vector<util::guidance::BearingClass> bearing_classes;
-            // and the actual bearing values
-            std::uint64_t num_bearings;
-            intersection_stream.read(reinterpret_cast<char *>(&num_bearings), sizeof(num_bearings));
-            m_bearing_values_table.resize(num_bearings);
-            intersection_stream.read(reinterpret_cast<char *>(&m_bearing_values_table[0]),
-                                     sizeof(m_bearing_values_table[0]) * num_bearings);
-            if (!static_cast<bool>(intersection_stream))
-                throw util::exception("Reading from " + intersection_class_file.string() +
-                                      " failed.");
-        }
-        {
-            util::SimpleLogger().Write(logINFO) << "Loading Entry Classes";
-            std::vector<util::guidance::EntryClass> entry_classes;
-            if (!util::deserializeVector(intersection_stream, entry_classes))
-                throw util::exception("Reading from " + intersection_class_file.string() +
-                                      " failed.");
-
-            m_entry_class_table.resize(entry_classes.size());
-            std::copy(entry_classes.begin(), entry_classes.end(), &m_entry_class_table[0]);
-        }
     }
 
   public:
@@ -392,41 +284,18 @@ class InternalDataFacade final : public BaseDataFacade
         ram_index_path = config.ram_index_path;
         file_index_path = config.file_index_path;
 
-        util::SimpleLogger().Write() << "loading graph data";
-        LoadGraph(config.hsgr_data_path);
+        util::SimpleLogger().Write() << "loading graph data for realreach";
+        LoadGraph(config.base);
 
         util::SimpleLogger().Write() << "loading edge information";
         LoadNodeAndEdgeInformation(config.nodes_data_path, config.edges_data_path);
 
-        util::SimpleLogger().Write() << "loading core information";
-        LoadCoreInformation(config.core_data_path);
-
         util::SimpleLogger().Write() << "loading geometries";
         LoadGeometries(config.geometries_path);
 
-        util::SimpleLogger().Write() << "loading datasource info";
-        LoadDatasourceInfo(config.datasource_names_path, config.datasource_indexes_path);
-
-        util::SimpleLogger().Write() << "loading timestamp";
-        LoadTimestamp(config.timestamp_path);
-
-        util::SimpleLogger().Write() << "loading profile properties";
-        LoadProfileProperties(config.properties_path);
-
-        util::SimpleLogger().Write() << "loading street names";
-        LoadStreetNames(config.names_data_path);
-
-        util::SimpleLogger().Write() << "loading lane tags";
-        LoadLaneDescriptions(config.turn_lane_description_path);
-
         util::SimpleLogger().Write() << "loading rtree";
         LoadRTree();
-
-        util::SimpleLogger().Write() << "loading intersection class data";
-        LoadIntersectionClasses(config.intersection_class_path);
-
-        util::SimpleLogger().Write() << "Loading Lane Data Pairs";
-        LoadLaneTupelIdPairs(config.turn_lane_data_path);
+        util::SimpleLogger().Write() << "loading rtree finished";
     }
 
     // search graph access
@@ -479,6 +348,11 @@ class InternalDataFacade final : public BaseDataFacade
         return m_query_graph->FindSmallestEdge(from, to, filter);
     }
 
+    // node and edge information access
+    osrm::extractor::QueryNode GetCoordinateOfNode2(const unsigned id) const override final
+    {
+        return coordinate_list[id];
+    }
     // node and edge information access
     util::Coordinate GetCoordinateOfNode(const unsigned id) const override final
     {
@@ -885,11 +759,6 @@ class InternalDataFacade final : public BaseDataFacade
         return m_profile_properties.continue_straight_at_waypoint;
     }
 
-    BearingClassID GetBearingClassID(const NodeID nid) const override final
-    {
-        return m_bearing_class_id_table.at(nid);
-    }
-
     util::guidance::BearingClass
     GetBearingClass(const BearingClassID bearing_class_id) const override final
     {
@@ -919,24 +788,6 @@ class InternalDataFacade final : public BaseDataFacade
     bool hasLaneData(const EdgeID id) const override final
     {
         return m_lane_data_id[id] != INVALID_LANE_DATAID;
-    }
-
-    util::guidance::LaneTupelIdPair GetLaneData(const EdgeID id) const override final
-    {
-        BOOST_ASSERT(hasLaneData(id));
-        return m_lane_tupel_id_pairs[m_lane_data_id[id]];
-    }
-
-    extractor::guidance::TurnLaneDescription
-    GetTurnDescription(const LaneDescriptionID lane_description_id) const override final
-    {
-        if (lane_description_id == INVALID_LANE_DESCRIPTIONID)
-            return {};
-        else
-            return extractor::guidance::TurnLaneDescription(
-                m_lane_description_masks.begin() + m_lane_description_offsets[lane_description_id],
-                m_lane_description_masks.begin() +
-                    m_lane_description_offsets[lane_description_id + 1]);
     }
 };
 }

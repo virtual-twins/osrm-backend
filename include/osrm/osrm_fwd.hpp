@@ -46,13 +46,8 @@ namespace engine
 {
 namespace api
 {
-struct RouteParameters;
-struct TableParameters;
-struct NearestParameters;
-struct TripParameters;
-struct MatchParameters;
-struct TileParameters;
 struct IsochroneParameters;
+struct IsodistanceParameters;
 } // ns api
 
 class Engine;

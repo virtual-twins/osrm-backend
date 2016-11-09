@@ -55,19 +55,9 @@ struct StorageConfig final
     boost::filesystem::path base;
     boost::filesystem::path ram_index_path;
     boost::filesystem::path file_index_path;
-    boost::filesystem::path hsgr_data_path;
     boost::filesystem::path nodes_data_path;
     boost::filesystem::path edges_data_path;
-    boost::filesystem::path core_data_path;
     boost::filesystem::path geometries_path;
-    boost::filesystem::path timestamp_path;
-    boost::filesystem::path datasource_names_path;
-    boost::filesystem::path datasource_indexes_path;
-    boost::filesystem::path names_data_path;
-    boost::filesystem::path properties_path;
-    boost::filesystem::path intersection_class_path;
-    boost::filesystem::path turn_lane_data_path;
-    boost::filesystem::path turn_lane_description_path;
 };
 }
 }

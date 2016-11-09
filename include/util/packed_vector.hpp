@@ -23,7 +23,7 @@ const constexpr std::size_t PACKSIZE = BITSIZE * ELEMSIZE;
 inline std::size_t PackedVectorSize(std::size_t elements)
 {
     return ceil(float(elements) / ELEMSIZE) * BITSIZE;
-};
+}
 
 /**
  * Returns the capacity of a packed vector with underlying vector size `vec_size`

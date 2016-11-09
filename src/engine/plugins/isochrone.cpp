@@ -17,20 +17,7 @@ namespace engine
 namespace plugins
 {
 
-IsochronePlugin::IsochronePlugin(const std::string base) : base{base}
-{
-
-    // Loads Graph into memory
-    if (!base.empty())
-    {
-        number_of_nodes = loadGraph(base, coordinate_list, graph_edge_list);
-    }
-
-    tbb::parallel_sort(graph_edge_list.begin(), graph_edge_list.end());
-    graph = std::make_shared<engine::plugins::SimpleGraph>(number_of_nodes, graph_edge_list);
-    graph_edge_list.clear();
-    graph_edge_list.shrink_to_fit();
-}
+IsochronePlugin::IsochronePlugin() {}
 
 Status IsochronePlugin::HandleRequest(const std::shared_ptr<datafacade::BaseDataFacade> facade,
                                       const api::IsochroneParameters &params,
@@ -77,6 +64,7 @@ Status IsochronePlugin::HandleRequest(const std::shared_ptr<datafacade::BaseData
     //                                   forward_id_vector);
     //    auto source = phantom.;
 
+    util::SimpleLogger().Write() << "asdasd";
     IsochroneVector isochroneVector;
     IsochroneVector convexhull;
     IsochroneVector concavehull;
@@ -84,7 +72,7 @@ Status IsochronePlugin::HandleRequest(const std::shared_ptr<datafacade::BaseData
     if (params.duration != 0)
     {
         TIMER_START(DIJKSTRA);
-        dijkstraByDuration(isochroneVector, source, params.duration);
+        dijkstraByDuration(facade, isochroneVector, source, params.duration);
         TIMER_STOP(DIJKSTRA);
         util::SimpleLogger().Write() << "DijkstraByDuration took: " << TIMER_MSEC(DIJKSTRA) << "ms";
         TIMER_START(SORTING);
@@ -99,7 +87,7 @@ Status IsochronePlugin::HandleRequest(const std::shared_ptr<datafacade::BaseData
     if (params.distance != 0)
     {
         TIMER_START(DIJKSTRA);
-        dijkstraByDistance(isochroneVector, source, params.distance);
+        dijkstraByDistance(facade, isochroneVector, source, params.distance);
         TIMER_STOP(DIJKSTRA);
         util::SimpleLogger().Write() << "DijkstraByDistance took: " << TIMER_MSEC(DIJKSTRA) << "ms";
         TIMER_START(SORTING);
@@ -144,16 +132,17 @@ Status IsochronePlugin::HandleRequest(const std::shared_ptr<datafacade::BaseData
     return Status::Ok;
 }
 
-void IsochronePlugin::dijkstraByDuration(IsochroneVector &isochroneSet,
+void IsochronePlugin::dijkstraByDuration(const std::shared_ptr<datafacade::BaseDataFacade> facade,
+                                         IsochroneVector &isochroneSet,
                                          NodeID &source,
                                          int duration)
 {
 
-    QueryHeap heap(number_of_nodes);
+    QueryHeap heap(facade->GetNumberOfNodes());
     heap.Insert(source, 0, source);
 
-    isochroneSet.emplace_back(
-        IsochroneNode(coordinate_list[source], coordinate_list[source], 0, 0));
+    isochroneSet.emplace_back(IsochroneNode(
+        facade->GetCoordinateOfNode2(source), facade->GetCoordinateOfNode2(source), 0, 0));
 
     int steps = 0;
     int MAX_DURATION = duration * 60 * 10;
@@ -165,12 +154,12 @@ void IsochronePlugin::dijkstraByDuration(IsochroneVector &isochroneSet,
             const NodeID source = heap.DeleteMin();
             const std::int32_t weight = heap.GetKey(source);
 
-            for (const auto current_edge : graph->GetAdjacentEdgeRange(source))
+            for (const auto current_edge : facade->GetAdjacentEdgeRange(source))
             {
-                const auto target = graph->GetTarget(current_edge);
+                const auto target = facade->GetTarget(current_edge);
                 if (target != SPECIAL_NODEID)
                 {
-                    const auto data = graph->GetEdgeData(current_edge);
+                    const auto data = facade->GetEdgeData(current_edge);
                     if (data.real)
                     {
                         int to_duration = weight + data.weight;
@@ -181,16 +170,19 @@ void IsochronePlugin::dijkstraByDuration(IsochroneVector &isochroneSet,
                         else if (!heap.WasInserted(target))
                         {
                             heap.Insert(target, to_duration, source);
-                            isochroneSet.emplace_back(IsochroneNode(
-                                coordinate_list[target], coordinate_list[source], 0, to_duration));
+                            isochroneSet.emplace_back(
+                                IsochroneNode(facade->GetCoordinateOfNode2(target),
+                                              facade->GetCoordinateOfNode2(source),
+                                              0,
+                                              to_duration));
                         }
                         else if (to_duration < heap.GetKey(target))
                         {
                             heap.GetData(target).parent = source;
                             heap.DecreaseKey(target, to_duration);
                             update(isochroneSet,
-                                   IsochroneNode(coordinate_list[target],
-                                                 coordinate_list[source],
+                                   IsochroneNode(facade->GetCoordinateOfNode2(target),
+                                                 facade->GetCoordinateOfNode2(source),
                                                  0,
                                                  to_duration));
                         }
@@ -201,15 +193,16 @@ void IsochronePlugin::dijkstraByDuration(IsochroneVector &isochroneSet,
     }
     util::SimpleLogger().Write() << "Steps took: " << steps;
 }
-void IsochronePlugin::dijkstraByDistance(IsochroneVector &isochroneSet,
+void IsochronePlugin::dijkstraByDistance(const std::shared_ptr<datafacade::BaseDataFacade> facade,
+                                         IsochroneVector &isochroneSet,
                                          NodeID &source,
                                          double distance)
 {
-    QueryHeap heap(number_of_nodes);
+    QueryHeap heap(facade->GetNumberOfNodes());
     heap.Insert(source, 0, source);
 
-    isochroneSet.emplace_back(
-        IsochroneNode(coordinate_list[source], coordinate_list[source], 0, 0));
+    isochroneSet.emplace_back(IsochroneNode(
+        facade->GetCoordinateOfNode2(source), facade->GetCoordinateOfNode2(source), 0, 0));
     int steps = 0;
     int MAX_DISTANCE = distance;
     {
@@ -220,16 +213,18 @@ void IsochronePlugin::dijkstraByDistance(IsochroneVector &isochroneSet,
             NodeID source = heap.DeleteMin();
             std::int32_t weight = heap.GetKey(source);
 
-            for (const auto current_edge : graph->GetAdjacentEdgeRange(source))
+            for (const auto current_edge : facade->GetAdjacentEdgeRange(source))
             {
-                const auto target = graph->GetTarget(current_edge);
+                const auto target = facade->GetTarget(current_edge);
                 if (target != SPECIAL_NODEID)
                 {
-                    const auto data = graph->GetEdgeData(current_edge);
+                    const auto data = facade->GetEdgeData(current_edge);
                     if (data.real)
                     {
-                        Coordinate s(coordinate_list[source].lon, coordinate_list[source].lat);
-                        Coordinate t(coordinate_list[target].lon, coordinate_list[target].lat);
+                        Coordinate s(facade->GetCoordinateOfNode2(source).lon,
+                                     facade->GetCoordinateOfNode2(source).lat);
+                        Coordinate t(facade->GetCoordinateOfNode2(target).lon,
+                                     facade->GetCoordinateOfNode2(target).lat);
                         // FIXME this might not be accurate enough
                         int to_distance =
                             static_cast<int>(
@@ -243,16 +238,19 @@ void IsochronePlugin::dijkstraByDistance(IsochroneVector &isochroneSet,
                         else if (!heap.WasInserted(target))
                         {
                             heap.Insert(target, to_distance, source);
-                            isochroneSet.emplace_back(IsochroneNode(
-                                coordinate_list[target], coordinate_list[source], to_distance, 0));
+                            isochroneSet.emplace_back(
+                                IsochroneNode(facade->GetCoordinateOfNode2(target),
+                                              facade->GetCoordinateOfNode2(source),
+                                              to_distance,
+                                              0));
                         }
                         else if (to_distance < heap.GetKey(target))
                         {
                             heap.GetData(target).parent = source;
                             heap.DecreaseKey(target, to_distance);
                             update(isochroneSet,
-                                   IsochroneNode(coordinate_list[target],
-                                                 coordinate_list[source],
+                                   IsochroneNode(facade->GetCoordinateOfNode2(target),
+                                                 facade->GetCoordinateOfNode2(source),
                                                  to_distance,
                                                  0));
                         }
@@ -262,46 +260,6 @@ void IsochronePlugin::dijkstraByDistance(IsochroneVector &isochroneSet,
         }
     }
     util::SimpleLogger().Write() << "Steps took: " << steps;
-}
-std::size_t IsochronePlugin::loadGraph(const std::string &path,
-                                       std::vector<extractor::QueryNode> &coordinate_list,
-                                       std::vector<SimpleEdge> &graph_edge_list)
-{
-
-    std::ifstream input_stream(path, std::ifstream::in | std::ifstream::binary);
-    if (!input_stream.is_open())
-    {
-        throw util::exception("Cannot open osrm file");
-    }
-
-    // load graph data
-    std::vector<extractor::NodeBasedEdge> edge_list;
-    std::vector<NodeID> traffic_light_node_list;
-    std::vector<NodeID> barrier_node_list;
-
-    auto number_of_nodes = util::loadNodesFromFile(
-        input_stream, barrier_node_list, traffic_light_node_list, coordinate_list);
-
-    util::loadEdgesFromFile(input_stream, edge_list);
-    traffic_light_node_list.clear();
-    traffic_light_node_list.shrink_to_fit();
-
-    // Building an node-based graph
-    for (const auto &input_edge : edge_list)
-    {
-        if (input_edge.source == input_edge.target)
-        {
-            continue;
-        }
-        // forward edge
-        graph_edge_list.emplace_back(
-            input_edge.source, input_edge.target, input_edge.weight, input_edge.forward);
-        // backward edge
-        graph_edge_list.emplace_back(
-            input_edge.target, input_edge.source, input_edge.weight, input_edge.backward);
-    }
-
-    return number_of_nodes;
 }
 
 void IsochronePlugin::update(IsochroneVector &v, IsochroneNode n)

@@ -31,13 +31,25 @@ namespace engine
 {
 namespace datafacade
 {
+    struct SimpleEdgeData
+    {
+        SimpleEdgeData() : weight(INVALID_EDGE_WEIGHT), real(false) {}
+        SimpleEdgeData(unsigned weight_, bool real_) : weight(weight_), real(real_) {}
+        unsigned weight;
+        bool real;
+        int distance;
+        bool shortcut;
+        NodeID id;
+        bool forward;
+        bool backward;
 
+    };
 using EdgeRange = util::range<EdgeID>;
 
 class BaseDataFacade
 {
   public:
-    using EdgeData = contractor::QueryEdge::EdgeData;
+    using EdgeData = SimpleEdgeData;
     using RTreeLeaf = extractor::EdgeBasedNode;
     BaseDataFacade() {}
     virtual ~BaseDataFacade() {}
@@ -73,6 +85,7 @@ class BaseDataFacade
 
     // node and edge information access
     virtual util::Coordinate GetCoordinateOfNode(const unsigned id) const = 0;
+    virtual osrm::extractor::QueryNode GetCoordinateOfNode2(const unsigned id) const = 0;
     virtual OSMNodeID GetOSMNodeIDOfNode(const unsigned id) const = 0;
 
     virtual GeometryID GetGeometryIndexForEdgeID(const unsigned id) const = 0;
@@ -147,9 +160,6 @@ class BaseDataFacade
                                                       const int bearing_range) const = 0;
 
     virtual bool hasLaneData(const EdgeID id) const = 0;
-    virtual util::guidance::LaneTupelIdPair GetLaneData(const EdgeID id) const = 0;
-    virtual extractor::guidance::TurnLaneDescription
-    GetTurnDescription(const LaneDescriptionID lane_description_id) const = 0;
 
     virtual unsigned GetCheckSum() const = 0;
 
@@ -170,8 +180,6 @@ class BaseDataFacade
     virtual std::string GetTimestamp() const = 0;
 
     virtual bool GetContinueStraightDefault() const = 0;
-
-    virtual BearingClassID GetBearingClassID(const NodeID id) const = 0;
 
     virtual util::guidance::BearingClass
     GetBearingClass(const BearingClassID bearing_class_id) const = 0;

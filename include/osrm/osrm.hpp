@@ -38,13 +38,8 @@ namespace osrm
 {
 namespace json = util::json;
 using engine::EngineConfig;
-using engine::api::RouteParameters;
-using engine::api::TableParameters;
-using engine::api::NearestParameters;
-using engine::api::TripParameters;
-using engine::api::MatchParameters;
-using engine::api::TileParameters;
 using engine::api::IsochroneParameters;
+using engine::api::IsodistanceParameters;
 
 /**
  * Represents a Open Source Routing Machine with access to its services.
@@ -78,66 +73,19 @@ class OSRM final
     OSRM &operator=(OSRM &&) noexcept;
 
     /**
-     * Shortest path queries for coordinates.
-     *
-     * \param parameters route query specific parameters
-     * \return Status indicating success for the query or failure
-     * \see Status, RouteParameters and json::Object
-     */
-    Status Route(const RouteParameters &parameters, json::Object &result) const;
-
-    /**
-     * Distance tables for coordinates.
-     *
-     * \param parameters table query specific parameters
-     * \return Status indicating success for the query or failure
-     * \see Status, TableParameters and json::Object
-     */
-    Status Table(const TableParameters &parameters, json::Object &result) const;
-
-    /**
-     * Nearest street segment for coordinate.
-     *
-     * \param parameters nearest query specific parameters
-     * \return Status indicating success for the query or failure
-     * \see Status, NearestParameters and json::Object
-     */
-    Status Nearest(const NearestParameters &parameters, json::Object &result) const;
-
-    /**
-     * Trip: shortest round trip between coordinates.
-     *
-     * \param parameters trip query specific parameters
-     * \return Status indicating success for the query or failure
-     * \see Status, TripParameters and json::Object
-     */
-    Status Trip(const TripParameters &parameters, json::Object &result) const;
-
-    /**
-     * Match: snaps noisy coordinate traces to the road network
-     *
-     * \param parameters match query specific parameters
-     * \return Status indicating success for the query or failure
-     * \see Status, MatchParameters and json::Object
-     */
-    Status Match(const MatchParameters &parameters, json::Object &result) const;
-
-    /**
-     * Tile: vector tiles with internal graph representation
-     *
-     * \param parameters tile query specific parameters
-     * \return Status indicating success for the query or failure
-     * \see Status, TileParameters and json::Object
-     */
-    Status Tile(const TileParameters &parameters, std::string &result) const;
-
-    /**
-     * Isochrone for given distance
+     * Isochrone for given duration
      * \param parameters nearest query specific parameters
      * \return Status indicating success for the query or failure
      * \see Status, NearestParameters and json::Object
      */
     Status Isochrone(const IsochroneParameters &parameters, json::Object &result) const;
+    /**
+     * Isodistance for given distance
+     * \param parameters nearest query specific parameters
+     * \return Status indicating success for the query or failure
+     * \see Status, NearestParameters and json::Object
+     */
+    Status Isodistance(const IsodistanceParameters &parameters, json::Object &result) const;
 
   private:
     std::unique_ptr<engine::Engine> engine_;
