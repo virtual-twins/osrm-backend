@@ -18,9 +18,9 @@ namespace util
 {
 
 // Compute the dot product AB ⋅ BC
-inline double dot(const engine::plugins::IsochroneNode &A,
-                  const engine::plugins::IsochroneNode &B,
-                  const engine::plugins::IsochroneNode &C)
+inline double dot(const engine::plugins::IsolineNode &A,
+                  const engine::plugins::IsolineNode &B,
+                  const engine::plugins::IsolineNode &C)
 {
     const double Ax = static_cast<double>(util::toFloating(A.node.lon)) *
                       util::coordinate_calculation::detail::DEGREE_TO_RAD;
@@ -57,9 +57,9 @@ inline double dot(const engine::plugins::IsochroneNode &A,
     return dot;
 }
 // Compute the cross product AB x AC
-inline double cross(const engine::plugins::IsochroneNode &A,
-                    const engine::plugins::IsochroneNode &B,
-                    const engine::plugins::IsochroneNode &C)
+inline double cross(const engine::plugins::IsolineNode &A,
+                    const engine::plugins::IsolineNode &B,
+                    const engine::plugins::IsolineNode &C)
 {
     const double Ax = static_cast<double>(util::toFloating(A.node.lon)) *
                       util::coordinate_calculation::detail::DEGREE_TO_RAD;
@@ -96,8 +96,8 @@ inline double cross(const engine::plugins::IsochroneNode &A,
     return cross;
 }
 // Compute the distance from A to B
-inline double distance(const engine::plugins::IsochroneNode &A,
-                       const engine::plugins::IsochroneNode &B)
+inline double distance(const engine::plugins::IsolineNode &A,
+                       const engine::plugins::IsolineNode &B)
 {
     const double Ax = static_cast<double>(util::toFloating(A.node.lon)) *
                       util::coordinate_calculation::detail::DEGREE_TO_RAD;
@@ -123,9 +123,9 @@ inline double distance(const engine::plugins::IsochroneNode &A,
 
 // Compute the distance from AB to C
 // if isSegment is true, AB is a segment, not a line.
-inline double linePointDist(const engine::plugins::IsochroneNode &A,
-                            const engine::plugins::IsochroneNode &B,
-                            const engine::plugins::IsochroneNode &C,
+inline double linePointDist(const engine::plugins::IsolineNode &A,
+                            const engine::plugins::IsolineNode &B,
+                            const engine::plugins::IsolineNode &C,
                             bool isSegment)
 {
     const double dist = cross(A, B, C) / distance(A, B);
@@ -144,9 +144,9 @@ inline double linePointDist(const engine::plugins::IsochroneNode &A,
     }
     return std::abs(dist);
 }
-inline double distanceToEdge(const engine::plugins::IsochroneNode &p,
-                             const engine::plugins::IsochroneNode &e1,
-                             const engine::plugins::IsochroneNode &e2)
+inline double distanceToEdge(const engine::plugins::IsolineNode &p,
+                             const engine::plugins::IsolineNode &e1,
+                             const engine::plugins::IsolineNode &e2)
 {
     const std::uint64_t pX = static_cast<std::int32_t>(p.node.lon);
     const std::uint64_t pY = static_cast<std::int32_t>(p.node.lat);
@@ -160,25 +160,25 @@ inline double distanceToEdge(const engine::plugins::IsochroneNode &p,
     return distance;
 }
 
-inline std::vector<engine::plugins::IsochroneNode>
-concavehull(std::vector<engine::plugins::IsochroneNode> &convexhull,
+inline std::vector<engine::plugins::IsolineNode>
+concavehull(std::vector<engine::plugins::IsolineNode> &convexhull,
             unsigned int threshold,
-            std::vector<engine::plugins::IsochroneNode> &isochrone)
+            std::vector<engine::plugins::IsolineNode> &isochrone)
 {
 
-    //    std::vector<engine::plugins::IsochroneNode> concavehull(convexhull);
-    std::vector<engine::plugins::IsochroneNode> concavehull = convexhull;
+    //    std::vector<engine::plugins::IsolineNode> concavehull(convexhull);
+    std::vector<engine::plugins::IsolineNode> concavehull = convexhull;
     concavehull.push_back(concavehull[0]);
 
-    for (std::vector<engine::plugins::IsochroneNode>::iterator it = concavehull.begin();
+    for (std::vector<engine::plugins::IsolineNode>::iterator it = concavehull.begin();
          it != concavehull.end() - 1;
          ++it)
     {
         // find the nearest inner point pk ∈ G from the edge (ci1, ci2);
         // pk should not closer to neighbor edges of (ci1, ci2) than (ci1, ci2)
-        engine::plugins::IsochroneNode n1 = *it;
-        engine::plugins::IsochroneNode n2 = *std::next(it);
-        engine::plugins::IsochroneNode pk;
+        engine::plugins::IsolineNode n1 = *it;
+        engine::plugins::IsolineNode n2 = *std::next(it);
+        engine::plugins::IsolineNode pk;
         double d = std::numeric_limits<double>::max();
         double edgelength = distance(n1, n2);
 

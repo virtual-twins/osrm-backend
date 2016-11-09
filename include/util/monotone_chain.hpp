@@ -14,7 +14,7 @@ namespace osrm
 {
 namespace util
 {
-using Node = engine::plugins::IsochroneNode;
+using Node = engine::plugins::IsolineNode;
 
 inline int ccw(Node &p, Node &q, Node &r)
 {

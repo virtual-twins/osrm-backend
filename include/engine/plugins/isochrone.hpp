@@ -24,18 +24,13 @@ namespace engine
 namespace plugins
 {
 
-using QueryHeap = osrm::util::
-    BinaryHeap<NodeID, NodeID, int, HeapData, osrm::util::UnorderedMapStorage<NodeID, int>>;
-typedef std::vector<IsochroneNode> IsochroneVector;
-
 class IsochronePlugin final : public IsolinePlugin
 {
   private:
-    void dijkstraByDuration(const std::shared_ptr<datafacade::BaseDataFacade> facade,
-                            IsochroneVector &set,
-                            NodeID &source,
-                            int duration);
-    void update(IsochroneVector &s, IsochroneNode node);
+    void dijkstra(const std::shared_ptr<datafacade::BaseDataFacade> facade,
+                  IsolineNodeVector &isolineNodeVector,
+                  NodeID &source,
+                  double duration);
 
   public:
     explicit IsochronePlugin();

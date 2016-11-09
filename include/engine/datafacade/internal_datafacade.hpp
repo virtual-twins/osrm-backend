@@ -295,7 +295,6 @@ class InternalDataFacade final : public BaseDataFacade
 
         util::SimpleLogger().Write() << "loading rtree";
         LoadRTree();
-        util::SimpleLogger().Write() << "loading rtree finished";
     }
 
     // search graph access

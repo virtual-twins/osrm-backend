@@ -51,26 +51,23 @@ Status IsochronePlugin::HandleRequest(const std::shared_ptr<datafacade::BaseData
         return Error("PhantomNode", "PhantomNode couldnt be found for coordinate", json_result);
     }
 
-    util::SimpleLogger().Write() << "asdasd";
     auto phantom = phantomnodes.front();
-    std::vector<NodeID> forward_id_vector;
 
     auto source =
         (*facade)
             .GetUncompressedReverseGeometry(phantom.front().phantom_node.packed_geometry_id)
             .front();
 
-    IsochroneVector isochroneVector;
-    IsochroneVector convexhull;
-    IsochroneVector concavehull;
+    IsolineNodeVector isochroneVector;
+    IsolineNodeVector convexhull;
+    IsolineNodeVector concavehull;
 
-    dijkstraByDuration(facade, isochroneVector, source, params.duration);
+    dijkstra(facade, isochroneVector, source, params.duration);
 
     std::sort(
         isochroneVector.begin(),
         isochroneVector.end(),
-        [&](const IsochroneNode n1, const IsochroneNode n2) { return n1.duration < n2.duration; });
-
+        [&](const IsolineNode n1, const IsolineNode n2) { return n1.weight < n2.weight; });
 
     // Optional param for calculating Convex Hull
     if (params.convexhull)
@@ -82,10 +79,8 @@ Status IsochronePlugin::HandleRequest(const std::shared_ptr<datafacade::BaseData
         concavehull = util::concavehull(convexhull, params.threshold, isochroneVector);
     }
 
-
     api::IsochroneAPI isochroneAPI{*facade, params};
     isochroneAPI.MakeResponse(isochroneVector, convexhull, concavehull, json_result);
-
 
     isochroneVector.clear();
     isochroneVector.shrink_to_fit();
@@ -96,17 +91,17 @@ Status IsochronePlugin::HandleRequest(const std::shared_ptr<datafacade::BaseData
     return Status::Ok;
 }
 
-void IsochronePlugin::dijkstraByDuration(const std::shared_ptr<datafacade::BaseDataFacade> facade,
-                                         IsochroneVector &isochroneSet,
-                                         NodeID &source,
-                                         int duration)
+void IsochronePlugin::dijkstra(const std::shared_ptr<datafacade::BaseDataFacade> facade,
+                               IsolineNodeVector &isochroneVector,
+                               NodeID &source,
+                               double duration)
 {
 
     QueryHeap heap(facade->GetNumberOfNodes());
     heap.Insert(source, 0, source);
 
-    isochroneSet.emplace_back(IsochroneNode(
-        facade->GetCoordinateOfNode2(source), facade->GetCoordinateOfNode2(source), 0, 0));
+    isochroneVector.emplace_back(IsolineNode(
+        facade->GetCoordinateOfNode2(source), facade->GetCoordinateOfNode2(source), 0));
 
     int steps = 0;
     int MAX_DURATION = duration * 60 * 10;
@@ -134,37 +129,23 @@ void IsochronePlugin::dijkstraByDuration(const std::shared_ptr<datafacade::BaseD
                         else if (!heap.WasInserted(target))
                         {
                             heap.Insert(target, to_duration, source);
-                            isochroneSet.emplace_back(
-                                IsochroneNode(facade->GetCoordinateOfNode2(target),
-                                              facade->GetCoordinateOfNode2(source),
-                                              0,
-                                              to_duration));
+                            isochroneVector.emplace_back(
+                                IsolineNode(facade->GetCoordinateOfNode2(target),
+                                            facade->GetCoordinateOfNode2(source),
+                                            to_duration));
                         }
                         else if (to_duration < heap.GetKey(target))
                         {
                             heap.GetData(target).parent = source;
                             heap.DecreaseKey(target, to_duration);
-                            update(isochroneSet,
-                                   IsochroneNode(facade->GetCoordinateOfNode2(target),
-                                                 facade->GetCoordinateOfNode2(source),
-                                                 0,
-                                                 to_duration));
+                            update(isochroneVector,
+                                   IsolineNode(facade->GetCoordinateOfNode2(target),
+                                               facade->GetCoordinateOfNode2(source),
+                                               to_duration));
                         }
                     }
                 }
             }
-        }
-    }
-    util::SimpleLogger().Write() << "Steps took: " << steps;
-}
-
-void IsochronePlugin::update(IsochroneVector &v, IsochroneNode n)
-{
-    for (auto node : v)
-    {
-        if (node.node.node_id == n.node.node_id)
-        {
-            node = n;
         }
     }
 }

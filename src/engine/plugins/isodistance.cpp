@@ -62,37 +62,33 @@ Status IsodistancePlugin::HandleRequest(const std::shared_ptr<datafacade::BaseDa
             .GetUncompressedReverseGeometry(phantom.front().phantom_node.packed_geometry_id)
             .front();
 
-    IsochroneVector isochroneVector;
-    IsochroneVector convexhull;
-    IsochroneVector concavehull;
+    IsolineNodeVector isodistanceVector;
+    IsolineNodeVector convexhull;
+    IsolineNodeVector concavehull;
 
-
-    dijkstraByDistance(facade, isochroneVector, source, params.distance);
+    dijkstra(facade, isodistanceVector, source, params.distance);
 
     std::sort(
-        isochroneVector.begin(),
-        isochroneVector.end(),
-        [&](const IsochroneNode n1, const IsochroneNode n2) { return n1.distance < n2.distance; });
+        isodistanceVector.begin(),
+        isodistanceVector.end(),
+        [&](const IsolineNode n1, const IsolineNode n2) { return n1.weight < n2.weight; });
 
     // Optional param for calculating Convex Hull
     if (params.convexhull)
     {
 
-        convexhull = util::monotoneChain(isochroneVector);
-
+        convexhull = util::monotoneChain(isodistanceVector);
     }
     if (params.concavehull && params.convexhull)
     {
-        concavehull = util::concavehull(convexhull, params.threshold, isochroneVector);
+        concavehull = util::concavehull(convexhull, params.threshold, isodistanceVector);
     }
 
-
     api::IsodistanceAPI isodistanceAPI{*facade, params};
-    isodistanceAPI.MakeResponse(isochroneVector, convexhull, concavehull, json_result);
+    isodistanceAPI.MakeResponse(isodistanceVector, convexhull, concavehull, json_result);
 
-
-    isochroneVector.clear();
-    isochroneVector.shrink_to_fit();
+    isodistanceVector.clear();
+    isodistanceVector.shrink_to_fit();
     convexhull.clear();
     convexhull.shrink_to_fit();
     concavehull.clear();
@@ -100,16 +96,16 @@ Status IsodistancePlugin::HandleRequest(const std::shared_ptr<datafacade::BaseDa
     return Status::Ok;
 }
 
-void IsodistancePlugin::dijkstraByDistance(const std::shared_ptr<datafacade::BaseDataFacade> facade,
-                                           IsochroneVector &isochroneSet,
-                                           NodeID &source,
-                                           double distance)
+void IsodistancePlugin::dijkstra(const std::shared_ptr<datafacade::BaseDataFacade> facade,
+                                 IsolineNodeVector &isodistanceVector,
+                                 NodeID &source,
+                                 double distance)
 {
     QueryHeap heap(facade->GetNumberOfNodes());
     heap.Insert(source, 0, source);
 
-    isochroneSet.emplace_back(IsochroneNode(
-        facade->GetCoordinateOfNode2(source), facade->GetCoordinateOfNode2(source), 0, 0));
+    isodistanceVector.emplace_back(IsolineNode(
+        facade->GetCoordinateOfNode2(source), facade->GetCoordinateOfNode2(source), 0));
     int steps = 0;
     int MAX_DISTANCE = distance;
     {
@@ -145,36 +141,23 @@ void IsodistancePlugin::dijkstraByDistance(const std::shared_ptr<datafacade::Bas
                         else if (!heap.WasInserted(target))
                         {
                             heap.Insert(target, to_distance, source);
-                            isochroneSet.emplace_back(
-                                IsochroneNode(facade->GetCoordinateOfNode2(target),
-                                              facade->GetCoordinateOfNode2(source),
-                                              to_distance,
-                                              0));
+                            isodistanceVector.emplace_back(
+                                IsolineNode(facade->GetCoordinateOfNode2(target),
+                                            facade->GetCoordinateOfNode2(source),
+                                            to_distance));
                         }
                         else if (to_distance < heap.GetKey(target))
                         {
                             heap.GetData(target).parent = source;
                             heap.DecreaseKey(target, to_distance);
-                            update(isochroneSet,
-                                   IsochroneNode(facade->GetCoordinateOfNode2(target),
-                                                 facade->GetCoordinateOfNode2(source),
-                                                 to_distance,
-                                                 0));
+                            update(isodistanceVector,
+                                   IsolineNode(facade->GetCoordinateOfNode2(target),
+                                               facade->GetCoordinateOfNode2(source),
+                                               to_distance));
                         }
                     }
                 }
             }
-        }
-    }
-}
-
-void IsodistancePlugin::update(IsochroneVector &v, IsochroneNode n)
-{
-    for (auto node : v)
-    {
-        if (node.node.node_id == n.node.node_id)
-        {
-            node = n;
         }
     }
 }

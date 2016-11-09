@@ -19,14 +19,15 @@ class IsodistanceAPI final : public BaseAPI
   public:
     const IsodistanceParameters &parameters;
 
-    IsodistanceAPI(const datafacade::BaseDataFacade &facade_, const IsodistanceParameters &parameters_)
+    IsodistanceAPI(const datafacade::BaseDataFacade &facade_,
+                   const IsodistanceParameters &parameters_)
         : BaseAPI(facade_, parameters_), parameters(parameters_)
     {
     }
 
-    void MakeResponse(const std::vector<engine::plugins::IsochroneNode> isochroneNodes,
-                      const std::vector<engine::plugins::IsochroneNode> convexhull,
-                      const std::vector<engine::plugins::IsochroneNode> concavehull,
+    void MakeResponse(const std::vector<engine::plugins::IsolineNode> isochroneNodes,
+                      const std::vector<engine::plugins::IsolineNode> convexhull,
+                      const std::vector<engine::plugins::IsolineNode> concavehull,
                       util::json::Object &response) const
     {
         util::json::Array isochroneJson;
@@ -47,7 +48,7 @@ class IsodistanceAPI final : public BaseAPI
             object.values["p2"] = std::move(predecessor);
 
             util::json::Object distance;
-            object.values["distance_from_start"] = isochrone.distance;
+            object.values["distance_from_start"] = isochrone.weight;
 
             isochroneJson.values.push_back(object);
         }
@@ -56,7 +57,7 @@ class IsodistanceAPI final : public BaseAPI
         if (!convexhull.empty())
         {
             util::json::Array convexhullArray;
-            for (engine::plugins::IsochroneNode n : convexhull)
+            for (engine::plugins::IsolineNode n : convexhull)
             {
                 util::json::Object point;
                 point.values["lat"] = static_cast<double>(util::toFloating(n.node.lat));
@@ -69,7 +70,7 @@ class IsodistanceAPI final : public BaseAPI
         if (!concavehull.empty())
         {
             util::json::Array concavehullArray;
-            for (engine::plugins::IsochroneNode n : concavehull)
+            for (engine::plugins::IsolineNode n : concavehull)
             {
                 util::json::Object point;
                 point.values["lat"] = static_cast<double>(util::toFloating(n.node.lat));
