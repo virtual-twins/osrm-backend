@@ -1,7 +1,7 @@
 #ifndef OSRM_CONCAVE_HULL_HPP
 #define OSRM_CONCAVE_HULL_HPP
 
-#include <engine/plugins/isochrone.hpp>
+#include <engine/plugins/isoline.hpp>
 #include <util/coordinate.hpp>
 #include <util/coordinate_calculation.hpp>
 #include <util/simple_logger.hpp>
@@ -18,9 +18,9 @@ namespace util
 {
 
 // Compute the dot product AB ⋅ BC
-double dot(const engine::plugins::IsochroneNode &A,
-           const engine::plugins::IsochroneNode &B,
-           const engine::plugins::IsochroneNode &C)
+inline double dot(const engine::plugins::IsochroneNode &A,
+                  const engine::plugins::IsochroneNode &B,
+                  const engine::plugins::IsochroneNode &C)
 {
     const double Ax = static_cast<double>(util::toFloating(A.node.lon)) *
                       util::coordinate_calculation::detail::DEGREE_TO_RAD;
@@ -57,9 +57,9 @@ double dot(const engine::plugins::IsochroneNode &A,
     return dot;
 }
 // Compute the cross product AB x AC
-double cross(const engine::plugins::IsochroneNode &A,
-             const engine::plugins::IsochroneNode &B,
-             const engine::plugins::IsochroneNode &C)
+inline double cross(const engine::plugins::IsochroneNode &A,
+                    const engine::plugins::IsochroneNode &B,
+                    const engine::plugins::IsochroneNode &C)
 {
     const double Ax = static_cast<double>(util::toFloating(A.node.lon)) *
                       util::coordinate_calculation::detail::DEGREE_TO_RAD;
@@ -96,7 +96,8 @@ double cross(const engine::plugins::IsochroneNode &A,
     return cross;
 }
 // Compute the distance from A to B
-double distance(const engine::plugins::IsochroneNode &A, const engine::plugins::IsochroneNode &B)
+inline double distance(const engine::plugins::IsochroneNode &A,
+                       const engine::plugins::IsochroneNode &B)
 {
     const double Ax = static_cast<double>(util::toFloating(A.node.lon)) *
                       util::coordinate_calculation::detail::DEGREE_TO_RAD;
@@ -122,10 +123,10 @@ double distance(const engine::plugins::IsochroneNode &A, const engine::plugins::
 
 // Compute the distance from AB to C
 // if isSegment is true, AB is a segment, not a line.
-double linePointDist(const engine::plugins::IsochroneNode &A,
-                     const engine::plugins::IsochroneNode &B,
-                     const engine::plugins::IsochroneNode &C,
-                     bool isSegment)
+inline double linePointDist(const engine::plugins::IsochroneNode &A,
+                            const engine::plugins::IsochroneNode &B,
+                            const engine::plugins::IsochroneNode &C,
+                            bool isSegment)
 {
     const double dist = cross(A, B, C) / distance(A, B);
     if (isSegment)
@@ -143,9 +144,9 @@ double linePointDist(const engine::plugins::IsochroneNode &A,
     }
     return std::abs(dist);
 }
-double distanceToEdge(const engine::plugins::IsochroneNode &p,
-                      const engine::plugins::IsochroneNode &e1,
-                      const engine::plugins::IsochroneNode &e2)
+inline double distanceToEdge(const engine::plugins::IsochroneNode &p,
+                             const engine::plugins::IsochroneNode &e1,
+                             const engine::plugins::IsochroneNode &e2)
 {
     const std::uint64_t pX = static_cast<std::int32_t>(p.node.lon);
     const std::uint64_t pY = static_cast<std::int32_t>(p.node.lat);
@@ -159,7 +160,7 @@ double distanceToEdge(const engine::plugins::IsochroneNode &p,
     return distance;
 }
 
-std::vector<engine::plugins::IsochroneNode>
+inline std::vector<engine::plugins::IsochroneNode>
 concavehull(std::vector<engine::plugins::IsochroneNode> &convexhull,
             unsigned int threshold,
             std::vector<engine::plugins::IsochroneNode> &isochrone)

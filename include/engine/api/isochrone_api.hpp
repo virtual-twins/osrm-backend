@@ -46,9 +46,6 @@ class IsochroneAPI final : public BaseAPI
                 static_cast<double>(util::toFloating(isochrone.predecessor.lon));
             object.values["p2"] = std::move(predecessor);
 
-            util::json::Object distance;
-            object.values["distance_from_start"] = isochrone.distance;
-
             util::json::Object duration;
             object.values["duration_from_start"] = isochrone.duration;
 

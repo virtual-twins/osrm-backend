@@ -17,9 +17,9 @@ class IsodistanceAPI final : public BaseAPI
 {
 
   public:
-    const IsochroneParameters &parameters;
+    const IsodistanceParameters &parameters;
 
-    IsochroneAPI(const datafacade::BaseDataFacade &facade_, const IsodistanceParameters &parameters_)
+    IsodistanceAPI(const datafacade::BaseDataFacade &facade_, const IsodistanceParameters &parameters_)
         : BaseAPI(facade_, parameters_), parameters(parameters_)
     {
     }

@@ -1,6 +1,7 @@
 #include "server/api/parameters_parser.hpp"
 
 #include "server/api/isochrone_parameter_grammar.hpp"
+#include "server/api/isodistance_parameter_grammar.hpp"
 
 #include <type_traits>
 
@@ -16,7 +17,8 @@ namespace detail
 template <typename T>
 using is_grammar_t =
     std::integral_constant<bool,
-                               std::is_same<IsochroneParametersGrammar<>, T>::value>;
+                           std::is_same<IsochroneParametersGrammar<>, T>::value ||
+                               std::is_same<IsodistanceParametersGrammar<>, T>::value>;
 
 template <typename ParameterT,
           typename GrammarT,
@@ -50,12 +52,18 @@ boost::optional<ParameterT> parseParameters(std::string::iterator &iter,
 }
 } // ns detail
 
-
 template <>
 boost::optional<engine::api::IsochroneParameters> parseParameters(std::string::iterator &iter,
                                                                   const std::string::iterator end)
 {
     return detail::parseParameters<engine::api::IsochroneParameters, IsochroneParametersGrammar<>>(
+        iter, end);
+}
+template <>
+boost::optional<engine::api::IsodistanceParameters> parseParameters(std::string::iterator &iter,
+                                                  const std::string::iterator end)
+{
+    return detail::parseParameters<engine::api::IsodistanceParameters, IsodistanceParametersGrammar<>>(
         iter, end);
 }
 

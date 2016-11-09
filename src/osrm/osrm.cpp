@@ -1,5 +1,6 @@
 #include "osrm/osrm.hpp"
 #include "engine/api/isochrone_parameters.hpp"
+#include "engine/api/isodistance_parameters.hpp"
 #include "engine/engine.hpp"
 #include "engine/engine_config.hpp"
 #include "engine/status.hpp"
@@ -21,6 +22,11 @@ engine::Status OSRM::Isochrone(const engine::api::IsochroneParameters &params,
                                json::Object &result) const
 {
     return engine_->Isochrone(params, result);
+}
+    engine::Status OSRM::Isodistance(const engine::api::IsodistanceParameters &params,
+                               json::Object &result) const
+{
+    return engine_->Isodistance(params, result);
 }
 
 } // ns osrm

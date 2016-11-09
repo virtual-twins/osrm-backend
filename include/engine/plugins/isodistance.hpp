@@ -1,7 +1,7 @@
-#ifndef ISOCHRONE_HPP
-#define ISOCHRONE_HPP
+#ifndef ISODISTANCE_HPP
+#define ISODISTANCE_HPP
 
-#include "engine/api/isochrone_parameters.hpp"
+#include "engine/api/isodistance_parameters.hpp"
 #include "engine/plugins/isoline.hpp"
 #include "osrm/json_container.hpp"
 #include "util/binary_heap.hpp"
@@ -24,28 +24,29 @@ namespace engine
 namespace plugins
 {
 
+
 using QueryHeap = osrm::util::
     BinaryHeap<NodeID, NodeID, int, HeapData, osrm::util::UnorderedMapStorage<NodeID, int>>;
 typedef std::vector<IsochroneNode> IsochroneVector;
 
-class IsochronePlugin final : public IsolinePlugin
+class IsodistancePlugin final : public IsolinePlugin
 {
   private:
-    void dijkstraByDuration(const std::shared_ptr<datafacade::BaseDataFacade> facade,
-                            IsochroneVector &set,
+    void dijkstraByDistance(const std::shared_ptr<datafacade::BaseDataFacade> facade,
+                            IsochroneVector &isochroneSet,
                             NodeID &source,
-                            int duration);
+                            double distance);
     void update(IsochroneVector &s, IsochroneNode node);
 
   public:
-    explicit IsochronePlugin();
+    explicit IsodistancePlugin();
 
     Status HandleRequest(const std::shared_ptr<datafacade::BaseDataFacade> facade,
-                         const api::IsochroneParameters &params,
+                         const api::IsodistanceParameters &params,
                          util::json::Object &json_result);
 };
 }
 }
 }
 
-#endif // ISOCHRONE_HPP
+#endif // ISODISTANCE_HPP

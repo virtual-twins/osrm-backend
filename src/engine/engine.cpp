@@ -3,6 +3,7 @@
 #include "engine/status.hpp"
 
 #include "engine/plugins/isochrone.hpp"
+#include "engine/plugins/isodistance.hpp"
 
 #include "engine/datafacade/datafacade_base.hpp"
 #include "engine/datafacade/internal_datafacade.hpp"
@@ -46,11 +47,11 @@ RunQuery(const std::unique_ptr<osrm::storage::SharedBarriers> &lock,
     boost::interprocess::sharable_lock<boost::interprocess::named_sharable_mutex> query_lock(
         lock->query_mutex);
 
-//    auto &shared_facade = static_cast<osrm::engine::datafacade::SharedDataFacade &>(*facade);
-//    shared_facade.CheckAndReloadFacade();
+    //    auto &shared_facade = static_cast<osrm::engine::datafacade::SharedDataFacade &>(*facade);
+    //    shared_facade.CheckAndReloadFacade();
     // Get a shared data lock so that other threads won't update
     // things while the query is running
-//    boost::shared_lock<boost::shared_mutex> data_lock{shared_facade.data_mutex};
+    //    boost::shared_lock<boost::shared_mutex> data_lock{shared_facade.data_mutex};
 
     osrm::engine::Status status = plugin.HandleRequest(facade, parameters, result);
 
@@ -70,7 +71,7 @@ Engine::Engine(const EngineConfig &config)
 {
     if (config.use_shared_memory)
     {
-//        query_data_facade = std::make_shared<datafacade::SharedDataFacade>();
+        //        query_data_facade = std::make_shared<datafacade::SharedDataFacade>();
     }
     else
     {
@@ -86,7 +87,6 @@ Engine::Engine(const EngineConfig &config)
 
     isochrone_plugin = std::make_unique<IsochronePlugin>();
     isodistance_plugin = std::make_unique<IsodistancePlugin>();
-
 }
 
 // make sure we deallocate the unique ptr at a position where we know the size of the plugins
@@ -97,6 +97,11 @@ Engine &Engine::operator=(Engine &&) noexcept = default;
 Status Engine::Isochrone(const api::IsochroneParameters &params, util::json::Object &result) const
 {
     return RunQuery(lock, query_data_facade, params, *isochrone_plugin, result);
+}
+Status Engine::Isodistance(const api::IsodistanceParameters &params,
+                           util::json::Object &result) const
+{
+    return RunQuery(lock, query_data_facade, params, *isodistance_plugin, result);
 }
 
 } // engine ns

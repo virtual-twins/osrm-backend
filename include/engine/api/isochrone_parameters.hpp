@@ -13,7 +13,6 @@ namespace api
 struct IsochroneParameters : public BaseParameters
 {
     unsigned int duration = 0;
-    double distance = 0;
     bool convexhull = false;
     bool concavehull = false;
     double threshold = 1; // max precision

@@ -57,12 +57,13 @@ class Engine final
     ~Engine();
 
     Status Isochrone(const api::IsochroneParameters &parameters, util::json::Object &result) const;
+    Status Isodistance(const api::IsodistanceParameters &parameters, util::json::Object &result) const;
 
   private:
     std::unique_ptr<storage::SharedBarriers> lock;
 
     std::unique_ptr<plugins::IsochronePlugin> isochrone_plugin;
-    std::unique_ptr<plugins::IsodistancePlugin> isochrone_plugin;
+    std::unique_ptr<plugins::IsodistancePlugin> isodistance_plugin;
 
     std::shared_ptr<datafacade::BaseDataFacade> query_data_facade;
 };

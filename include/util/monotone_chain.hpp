@@ -1,7 +1,7 @@
 #ifndef OSRM_MONOTONE_CHAIN_HPP
 #define OSRM_MONOTONE_CHAIN_HPP
 
-#include <engine/plugins/isochrone.hpp>
+#include <engine/plugins/isoline.hpp>
 #include <util/coordinate.hpp>
 #include <util/coordinate_calculation.hpp>
 #include <util/simple_logger.hpp>
@@ -16,7 +16,7 @@ namespace util
 {
 using Node = engine::plugins::IsochroneNode;
 
-int ccw(Node &p, Node &q, Node &r)
+inline int ccw(Node &p, Node &q, Node &r)
 {
     // Using double values to avoid integer overflows
     double Q_lat = static_cast<double>(util::toFloating(q.node.lat));
@@ -34,7 +34,7 @@ int ccw(Node &p, Node &q, Node &r)
     return (val < 0) ? -1 : 1; // clock or counterclock wise
 }
 
-std::vector<Node> monotoneChain(std::vector<Node> &nodes)
+inline std::vector<Node> monotoneChain(std::vector<Node> &nodes)
 {
     std::vector<Node> P(nodes);
     int n = P.size(), k = 0;

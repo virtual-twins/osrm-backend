@@ -30,10 +30,7 @@ struct IsochroneParametersGrammar final : public BaseParametersGrammar<Iterator,
 
         duration_rule =
             (qi::lit("duration=") >
-             qi::uint_)[ph::bind(&engine::api::IsochroneParameters::duration, qi::_r1) = qi::_1];
-        distance_rule =
-            (qi::lit("distance=") >
-             qi::double_)[ph::bind(&engine::api::IsochroneParameters::distance, qi::_r1) = qi::_1];
+             qi::uint_)[ph::bind(&engine::api::IsochroneParameters::duration, qi::_r1) = qi::_1];;
         convexhull_rule =
             (qi::lit("convexhull=") >
              qi::bool_)[ph::bind(&engine::api::IsochroneParameters::convexhull, qi::_r1) = qi::_1];
@@ -46,7 +43,7 @@ struct IsochroneParametersGrammar final : public BaseParametersGrammar<Iterator,
 
         root_rule =
             BaseGrammar::query_rule(qi::_r1) > -qi::lit(".json") >
-            -('?' > (distance_rule(qi::_r1) | duration_rule(qi::_r1) | convexhull_rule(qi::_r1) |
+            -('?' > (duration_rule(qi::_r1) | convexhull_rule(qi::_r1) |
                      concavehull_rule(qi::_r1) | threshold_rule(qi::_r1)) %
                         '&');
     }
@@ -54,7 +51,6 @@ struct IsochroneParametersGrammar final : public BaseParametersGrammar<Iterator,
   private:
     qi::rule<Iterator, Signature> root_rule;
     qi::rule<Iterator, Signature> duration_rule;
-    qi::rule<Iterator, Signature> distance_rule;
     qi::rule<Iterator, Signature> convexhull_rule;
     qi::rule<Iterator, Signature> concavehull_rule;
     qi::rule<Iterator, Signature> threshold_rule;
