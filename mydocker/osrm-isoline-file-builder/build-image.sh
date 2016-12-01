@@ -3,4 +3,4 @@
 set -e
 set -o pipefail
 
-docker build -t naviki/osrm-isoline-file-builder:latest .
+docker build -t naviki/osrm-isoline-file-builder .

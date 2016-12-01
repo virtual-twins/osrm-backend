@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang='en' xmlns='http:www.w3.org/1999/html'>
+<script src='util.js'></script>
+<script src='event.js'></script>
+<script src='typedefs.js'></script>
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
+<script src='https://code.jquery.com/jquery-1.10.2.js'></script>
+<head>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v0.20.1/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        div.container {
+            width: 100%;
+            border: 1px solid gray;
+        }
+
+        header, footer {
+            padding: 1em;
+            color: white;
+            background-color: black;
+            clear: left;
+            text-align: center;
+        }
+
+        nav {
+            float: left;
+            max-width: 160px;
+            margin: 0;
+            padding: 1em;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        nav ul a {
+            text-decoration: none;
+        }
+
+        article {
+            margin-left: 170px;
+            border-left: 1px solid gray;
+            padding: 1em;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <nav>
+        <form id="InputForm">
+            Profile: <br>
+            <input type="radio" name="vehicle" value="bicycle" onchange="onProfileChange()" checked>Fahrrad<br>
+            <input type="radio" name="vehicle" value="car" onchange="onProfileChange()" >Auto<br>
+            Detailgrad: <br>
+            <input type="checkbox" name="detail" value="iso" onchange="onDetailChanged()" checked>Dijkstra<br>
+            <input type="checkbox" name="detail" value="convex" onchange="onDetailChanged()">ConvexHull<br>
+            <input type="checkbox" name="detail" value="concave" onchange="onDetailChanged()">ConcaveHull<br>
+            Suchradius: <br>
+            <input type="radio" name="measurement" value="distance" onchange="onMeasurementChange()" checked>Distanz in Meter<br>
+            <input type="radio" name="measurement" value="time" onchange="onMeasurementChange()">Zeit in Minuten<br>
+            <input type="text" name="distance" value="1000" id="distanceInput"> <br>
+            Treshold: <input type="text" name="treshold" value="10" id="tresholdInput"> <br>
+            <input type="button" onclick="onSubmitClick()" value="Senden">
+        </form>
+    </nav>
+    <article>
+        <div id='map' style='width: 1150px; height: 600px;'></div>
+    </article>
+
+
+    <script>
+
+        var port = 5183;
+        var lng = 7.638524;
+        var lat = 51.955401;
+        var measurement = 'distance';
+	    var request = 'isodistance';
+        var weight = 1000;
+        var threshold = 10;
+        var concave = false;
+        var iso = true;
+        var convex = false;
+
+        mapboxgl.accessToken = 'pk.eyJ1Ijoicm9yb2V0dGciLCJhIjoiY2lxMXltdWd0MDAzZWh4bTJzbG9qd3g4ZyJ9.xN0Y-FQfNz_a0ltXFK4v1w';
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox:styles/mapbox/streets-v9',
+            center: [lng, lat],
+            zoom: 13
+        });
+
+        var isochrone = {
+            'type': 'Feature',
+            'geometry': {
+                'type': 'MultiLineString',
+                'coordinates': []
+            }
+        };
+        var convexhull = {
+            'type': 'Feature',
+            'geometry': {
+                'type': 'MultiPolygon',
+                'coordinates': []
+            }
+        };
+        var concavehull = {
+            'type': 'Feature',
+            'geometry': {
+                'type': 'MultiPolygon',
+                'coordinates': []
+            }
+        };
+        var marker = {
+            'type': 'Feature',
+            'geometry': {
+                'type': 'Point',
+                'coordinates': []
+            },
+            'properties': {
+                'title': 'Start',
+                'icon': 'star'
+            }
+        };
+
+
+        map.on('load', function () {
+            map.addSource('isochrone', {
+                'type': 'geojson',
+                'data': isochrone
+            });
+
+            map.addSource('convexhull', {
+                'type': 'geojson',
+                'data': convexhull
+            });
+            map.addSource('concavehull', {
+                'type': 'geojson',
+                'data': concavehull
+            });
+            map.addSource('marker', {
+                'type': 'geojson',
+                'data': marker
+            });
+
+            map.addLayer({
+                'id': 'convexhull',
+                'type': 'fill',
+                'source': 'convexhull',
+                'layout': {},
+                'paint': {
+                    'fill-color': '#ee0000',
+                    'fill-opacity': 0.33,
+                    'fill-outline-color':'#bb0000'
+                }
+            });
+            map.addLayer({
+                'id': 'concavehull',
+                'type': 'fill',
+                'source': 'concavehull',
+                'paint': {
+                    'fill-color': '#00ee00',
+                    'fill-opacity': 0.33,
+                    'fill-outline-color':'#00bb00'
+                }
+            });
+            map.addLayer({
+                'id': 'isochrone',
+                'type': 'line',
+                'source': 'isochrone',
+                'layout': {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                'paint': {
+                    'line-color': '#000888',
+                    'line-width': 3
+                }
+            });
+            map.addLayer({
+                "id": "marker",
+                "type": "symbol",
+                "source": "marker",
+                "layout": {
+                    "icon-image": "{icon}-15",
+                    "text-field": "{title}",
+                    "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+                    "text-offset": [0, 0.6],
+                    "text-anchor": "top"
+                }
+            });
+
+            query(lat,lng);
+        });
+
+        map.on('click', function (e) {
+            lat = e.lngLat.lat;
+            lng = e.lngLat.lng;
+            query(e.lngLat.lat, e.lngLat.lng)
+        });
+    </script>
+</body>
+</html>
