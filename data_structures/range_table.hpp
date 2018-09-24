@@ -34,6 +34,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <fstream>
 #include <array>
+
+// NOTE: BLOCK_SIZE defined as a macro in <linux/fs.h> (included by <linux/aio_abi.h> after kernel v4.14)
+#undef BLOCK_SIZE
+
 /*
  * These pre-declarations are needed because parsing C++ is hard
  * and otherwise the compiler gets confused.
