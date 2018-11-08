@@ -10,6 +10,9 @@
 #include <fstream>
 #include <utility>
 
+// NOTE: BLOCK_SIZE defined as a macro in <linux/fs.h> (included by <linux/aio_abi.h> after kernel v4.14)
+#undef BLOCK_SIZE
+
 namespace osrm
 {
 namespace util
