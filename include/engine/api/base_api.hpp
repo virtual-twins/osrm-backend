@@ -58,6 +58,7 @@ class BaseAPI
                 util::coordinate_calculation::fccApproximateDistance(phantom.location,
                                                                      phantom.input_location),
                 facade.GetNameForID(facade.GetNameIndex(phantom.forward_segment_id.id)).to_string(),
+                facade.GetOSMNodeIDOfNode(phantom.forward_segment_id.id),
                 Hint{phantom, facade.GetCheckSum()});
         }
         else
@@ -68,7 +69,8 @@ class BaseAPI
                 util::coordinate_calculation::fccApproximateDistance(phantom.location,
                                                                      phantom.input_location),
                 facade.GetNameForID(facade.GetNameIndex(phantom.forward_segment_id.id))
-                    .to_string());
+                    .to_string(),
+                facade.GetOSMNodeIDOfNode(phantom.forward_segment_id.id));
         }
     }
 
