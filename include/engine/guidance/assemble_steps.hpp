@@ -118,6 +118,7 @@ inline std::vector<RouteStep> assembleSteps(const datafacade::BaseDataFacade &fa
             if (path_point.turn_instruction.type != osrm::guidance::TurnType::NoTurn)
             {
                 BOOST_ASSERT(segment_weight >= 0);
+                const auto osm_node_id = facade.GetOSMNodeIDOfNode(path_point.turn_via_node);
                 const auto name = facade.GetNameForID(step_name_id);
                 const auto ref = facade.GetRefForID(step_name_id);
                 const auto pronunciation = facade.GetPronunciationForID(step_name_id);
@@ -127,7 +128,8 @@ inline std::vector<RouteStep> assembleSteps(const datafacade::BaseDataFacade &fa
                 // intersections contain the classes of exiting road
                 intersection.classes = facade.GetClasses(path_point.classes);
 
-                steps.push_back(RouteStep{path_point.from_edge_based_node,
+                steps.push_back(RouteStep{osm_node_id,
+                                          path_point.from_edge_based_node,
                                           step_name_id,
                                           is_segregated,
                                           name.to_string(),
@@ -210,7 +212,8 @@ inline std::vector<RouteStep> assembleSteps(const datafacade::BaseDataFacade &fa
         // intersections contain the classes of exiting road
         intersection.classes = facade.GetClasses(facade.GetClassData(target_node_id));
         BOOST_ASSERT(duration >= 0);
-        steps.push_back(RouteStep{leg_data[leg_data.size() - 1].from_edge_based_node,
+        steps.push_back(RouteStep{facade.GetOSMNodeIDOfNode(leg_data[leg_data.size() - 1].turn_via_node),
+                                  leg_data[leg_data.size() - 1].from_edge_based_node,
                                   step_name_id,
                                   is_segregated,
                                   facade.GetNameForID(step_name_id).to_string(),
@@ -255,7 +258,8 @@ inline std::vector<RouteStep> assembleSteps(const datafacade::BaseDataFacade &fa
         BOOST_ASSERT(target_duration >= source_duration || weight == 0);
         const EdgeWeight duration = std::max(0, target_duration - source_duration);
 
-        steps.push_back(RouteStep{source_node_id,
+        steps.push_back(RouteStep{facade.GetOSMNodeIDOfNode(source_node_id),
+                                  source_node_id,
                                   source_name_id,
                                   is_segregated,
                                   facade.GetNameForID(source_name_id).to_string(),
@@ -298,7 +302,8 @@ inline std::vector<RouteStep> assembleSteps(const datafacade::BaseDataFacade &fa
                 0};
 
     BOOST_ASSERT(!leg_geometry.locations.empty());
-    steps.push_back(RouteStep{target_node_id,
+    steps.push_back(RouteStep{facade.GetOSMNodeIDOfNode(target_node_id),
+                              target_node_id,
                               target_name_id,
                               facade.IsSegregated(target_node_id),
                               facade.GetNameForID(target_name_id).to_string(),

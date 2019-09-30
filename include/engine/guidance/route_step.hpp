@@ -59,6 +59,7 @@ inline IntermediateIntersection getInvalidIntersection()
 
 struct RouteStep
 {
+    OSMNodeID osm_node_id;
     NodeID from_id;
     unsigned name_id;
     bool is_segregated;
@@ -182,6 +183,7 @@ inline RouteStep &RouteStep::MergeWith(const RouteStep &by_step)
 // copy all strings from origin into the step, apart from rotary names
 inline RouteStep &RouteStep::AdaptStepSignage(const RouteStep &origin)
 {
+    osm_node_id = origin.osm_node_id;
     name_id = origin.name_id;
     name = origin.name;
     pronunciation = origin.pronunciation;
