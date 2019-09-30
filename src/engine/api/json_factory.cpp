@@ -174,6 +174,7 @@ util::json::Object makeRouteStep(guidance::RouteStep step, util::json::Value geo
     util::json::Object route_step;
     route_step.values.reserve(15);
 
+    route_step.values.emplace("osm_node_id", static_cast<std::uint64_t>(step.osm_node_id)); // TODO may remove cast
     route_step.values.emplace("distance", std::round(step.distance * 10) / 10.);
     route_step.values.emplace("duration", step.duration);
     route_step.values.emplace("weight", step.weight);
@@ -234,8 +235,10 @@ util::json::Object makeRoute(const guidance::Route &route,
     return json_route;
 }
 
-util::json::Object
-makeWaypoint(const util::Coordinate &location, const double &distance, std::string name)
+util::json::Object makeWaypoint(const util::Coordinate &location,
+                                const double &distance,
+                                std::string name,
+                                const OSMNodeID osm_node_id)
 {
     util::json::Object waypoint;
     waypoint.values.reserve(3);
@@ -243,15 +246,17 @@ makeWaypoint(const util::Coordinate &location, const double &distance, std::stri
     waypoint.values.emplace("location", detail::coordinateToLonLat(location));
     waypoint.values.emplace("name", std::move(name));
     waypoint.values.emplace("distance", distance);
+    waypoint.values.emplace("osm_node_id", tatic_cast<std::uint64_t>(osm_node_id)); // TODO may remove casting
     return waypoint;
 }
 
 util::json::Object makeWaypoint(const util::Coordinate &location,
                                 const double &distance,
                                 std::string name,
+                                const OSMNodeID osm_node_id,
                                 const Hint &location_hints)
 {
-    auto waypoint = makeWaypoint(location, distance, std::move(name));
+    auto waypoint = makeWaypoint(location, distance, std::move(name), osm_node_id);
     waypoint.values.reserve(1);
     waypoint.values.emplace("hint", location_hints.ToBase64());
     return waypoint;
