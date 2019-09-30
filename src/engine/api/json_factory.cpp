@@ -171,6 +171,7 @@ util::json::Object makeIntersection(const guidance::IntermediateIntersection &in
 util::json::Object makeRouteStep(guidance::RouteStep step, util::json::Value geometry)
 {
     util::json::Object route_step;
+    route_step.values["osm_node_id"] = static_cast<std::uint64_t>(step.osm_node_id);
     route_step.values["distance"] = std::round(step.distance * 10) / 10.;
     route_step.values["duration"] = step.duration;
     route_step.values["weight"] = step.weight;
@@ -226,22 +227,26 @@ util::json::Object makeRoute(const guidance::Route &route,
     return json_route;
 }
 
-util::json::Object
-makeWaypoint(const util::Coordinate &location, const double &distance, std::string name)
+util::json::Object makeWaypoint(const util::Coordinate &location, 
+                                const double &distance, 
+                                std::string name,
+                                const NodeID osm_node_id)
 {
     util::json::Object waypoint;
     waypoint.values["location"] = detail::coordinateToLonLat(location);
     waypoint.values["name"] = std::move(name);
     waypoint.values["distance"] = distance;
+    waypoint.values["osm_node_id"] = static_cast<std::uint64_t>(osm_node_id);
     return waypoint;
 }
 
 util::json::Object makeWaypoint(const util::Coordinate &location,
                                 const double &distance,
                                 std::string name,
+                                const NodeID osm_node_id,
                                 const Hint &location_hints)
 {
-    auto waypoint = makeWaypoint(location, distance, std::move(name));
+    auto waypoint = makeWaypoint(location, distance, std::move(name), osm_node_id);
     waypoint.values["hint"] = location_hints.ToBase64();
     return waypoint;
 }

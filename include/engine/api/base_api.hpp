@@ -84,6 +84,7 @@ class BaseAPI
                 snapped_location,
                 util::coordinate_calculation::greatCircleDistance(snapped_location, input_location),
                 waypoint_name,
+                candidates[0].forward_segment_id.id, // TODO check if that workaround is usable
                 {std::move(seg_hints)});
         }
         else
@@ -91,7 +92,8 @@ class BaseAPI
             return json::makeWaypoint(
                 snapped_location,
                 util::coordinate_calculation::greatCircleDistance(snapped_location, input_location),
-                waypoint_name);
+                waypoint_name,
+                candidates[0].forward_segment_id.id);
         }
     }
 
