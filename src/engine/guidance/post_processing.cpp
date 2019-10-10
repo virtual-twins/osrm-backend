@@ -456,7 +456,7 @@ std::vector<RouteStep> assignRelativeLocations(std::vector<RouteStep> steps,
     // sufficiently different but not full of the path
     BOOST_ASSERT(steps.size() >= 2);
     BOOST_ASSERT(leg_geometry.locations.size() >= 2);
-    const constexpr double MINIMAL_RELATIVE_DISTANCE = 5., MAXIMAL_RELATIVE_DISTANCE = 300.;
+    const constexpr double MINIMAL_RELATIVE_DISTANCE = 0.5, MAXIMAL_RELATIVE_DISTANCE = 30.;
     const auto distance_to_start = util::coordinate_calculation::greatCircleDistance(
         source_node.input_location, leg_geometry.locations[0]);
     const auto initial_modifier =
