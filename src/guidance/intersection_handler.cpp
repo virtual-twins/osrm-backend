@@ -171,7 +171,7 @@ TurnInstruction IntersectionHandler::getInstructionForObvious(const std::size_t 
                 }
                 else
                 {
-                    const double constexpr MAX_COLLAPSE_DISTANCE = 30;
+                    const double constexpr MAX_COLLAPSE_DISTANCE = 3;
                     // in normal road condidtions, we check if the turn is nearly straight.
                     // Doing so, we widen the angle that a turn is considered straight, but since it
                     // is obvious, the choice is arguably better. We need the road to continue for a

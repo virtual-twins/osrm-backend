@@ -20,9 +20,9 @@ namespace guidance
 using RouteSteps = std::vector<RouteStep>;
 using RouteStepIterator = typename RouteSteps::iterator;
 const constexpr std::size_t MIN_END_OF_ROAD_INTERSECTIONS = std::size_t{2};
-const constexpr double MAX_COLLAPSE_DISTANCE = 30.0;
+const constexpr double MAX_COLLAPSE_DISTANCE = 3.0;
 // a bit larger than 100 to avoid oscillation in tests
-const constexpr double NAME_SEGMENT_CUTOFF_LENGTH = 105.0;
+const constexpr double NAME_SEGMENT_CUTOFF_LENGTH = 10.5;
 const double constexpr STRAIGHT_ANGLE = 180.;
 
 // check if a step is completely without turn type

@@ -24,14 +24,14 @@ namespace
 {
 // to use the corrected coordinate, we require it to be at least a bit further down the
 // road than the offset coordinate. We postulate a minimum Distance of 2 Meters
-const constexpr double DESIRED_COORDINATE_DIFFERENCE = 2.0;
+const constexpr double DESIRED_COORDINATE_DIFFERENCE = 0.2;
 // the default distance we lookahead on a road. This distance prevents small mapping
 // errors to impact the turn angles.
-const constexpr double LOOKAHEAD_DISTANCE_WITHOUT_LANES = 10.0;
+const constexpr double LOOKAHEAD_DISTANCE_WITHOUT_LANES = 1.0;
 // The standard with of a interstate highway is 3.7 meters. Local roads have
 // smaller widths, ranging from 2.5 to 3.25 meters. As a compromise, we use
 // the 3.25 here for our angle calculations
-const constexpr double FAR_LOOKAHEAD_DISTANCE = 40.0;
+const constexpr double FAR_LOOKAHEAD_DISTANCE = 4.0;
 
 // The count of lanes assumed when no lanes are present. Since most roads will have lanes for both
 // directions or a lane count specified, we use 2. Overestimating only makes our calculations safer,
