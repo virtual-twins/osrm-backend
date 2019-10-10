@@ -104,7 +104,7 @@ bool isStaggeredIntersection(const RouteStepIterator step_prior_to_intersection,
         return false;
     // Base decision on distance since the zig-zag is a visual clue.
     // If adjusted, make sure to check validity of the is_right/is_left classification below
-    const constexpr auto MAX_STAGGERED_DISTANCE = 3; // debatable, but keep short to be on safe side
+    const constexpr auto MAX_STAGGERED_DISTANCE = 0.3; // debatable, but keep short to be on safe side
 
     const auto angle = [](const RouteStep &step) {
         const auto &intersection = step.intersections.front();
