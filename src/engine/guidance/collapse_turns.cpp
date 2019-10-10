@@ -21,7 +21,7 @@ using namespace osrm::guidance;
 
 namespace
 {
-const constexpr double MAX_COLLAPSE_DISTANCE = 30;
+const constexpr double MAX_COLLAPSE_DISTANCE = 3;
 
 // find the combined turn angle for two turns. Not in all scenarios we can easily add both angles
 // (e.g 90 degree left followed by 90 degree right would be no turn at all).

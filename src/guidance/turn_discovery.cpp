@@ -41,7 +41,7 @@ bool findPreviousIntersection(const NodeID node_v,
      * PREVIOUS_ID. To verify that find, we check the intersection using our PREVIOUS_ID candidate
      * to check the intersection at NODE for via_edge
      */
-    const constexpr double COMBINE_DISTANCE_CUTOFF = 30;
+    const constexpr double COMBINE_DISTANCE_CUTOFF = 3;
 
     const extractor::intersection::CoordinateExtractor coordinate_extractor(
         node_based_graph, compressed_geometries, node_coordinates);

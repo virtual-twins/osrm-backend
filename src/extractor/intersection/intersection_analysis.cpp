@@ -297,7 +297,7 @@ getIntersectionGeometries(const util::NodeBasedDynamicGraph &graph,
 
     if (edges_number >= 2)
     { // Adjust bearings of roads that will be merged at the neighbor intersections
-        const double constexpr PRUNING_DISTANCE = 30.;
+        const double constexpr PRUNING_DISTANCE = 3.;
 
         for (std::size_t index = 0; index < edges_number; ++index)
         {
