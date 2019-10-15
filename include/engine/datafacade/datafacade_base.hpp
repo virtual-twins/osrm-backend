@@ -134,6 +134,7 @@ class BaseDataFacade
                                const double max_distance,
                                const boost::optional<Bearing> bearing,
                                const Approach approach,
+                               const int level,
                                const bool use_all_edges) const = 0;
 
     virtual std::vector<PhantomNodeWithDistance>
@@ -141,13 +142,15 @@ class BaseDataFacade
                         const size_t max_results,
                         const boost::optional<double> max_distance,
                         const boost::optional<Bearing> bearing,
-                        const Approach approach) const = 0;
+                        const Approach approach,
+                        const int level) const = 0;
 
     virtual PhantomCandidateAlternatives
     NearestCandidatesWithAlternativeFromBigComponent(const util::Coordinate input_coordinate,
                                                      const boost::optional<double> max_distance,
                                                      const boost::optional<Bearing> bearing,
                                                      const Approach approach,
+                                                     const int level,
                                                      const bool use_all_edges) const = 0;
 
     virtual bool HasLaneData(const EdgeID edge_based_edge_id) const = 0;

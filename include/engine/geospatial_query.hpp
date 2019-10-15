@@ -57,16 +57,17 @@ template <typename RTreeT, typename DataFacadeT> class GeospatialQuery
                         const boost::optional<size_t> max_results,
                         const boost::optional<double> max_distance,
                         const boost::optional<Bearing> bearing_with_range,
+                        const boost::optional<int> level,
                         const boost::optional<bool> use_all_edges) const
     {
         auto results = rtree.Nearest(
             input_coordinate,
-            [this, approach, &input_coordinate, &bearing_with_range, &use_all_edges](
+            [this, approach, &input_coordinate, &bearing_with_range, level, &use_all_edges](
                 const CandidateSegment &segment) {
                 auto valid = CheckSegmentExclude(segment) &&
                              CheckApproach(input_coordinate, segment, approach) &&
-                             (use_all_edges ? HasValidEdge(segment, *use_all_edges)
-                                            : HasValidEdge(segment)) &&
+                             (use_all_edges ? HasValidEdge(segment, level, *use_all_edges)
+                                            : HasValidEdge(segment, level)) &&
                              (bearing_with_range ? CheckSegmentBearing(segment, *bearing_with_range)
                                                  : std::make_pair(true, true));
                 return valid;
@@ -91,6 +92,7 @@ template <typename RTreeT, typename DataFacadeT> class GeospatialQuery
         const Approach approach,
         const boost::optional<double> max_distance,
         const boost::optional<Bearing> bearing_with_range,
+        const boost::optional<int> level,
         const boost::optional<bool> use_all_edges) const
     {
         bool has_nearest = false;
@@ -102,6 +104,7 @@ template <typename RTreeT, typename DataFacadeT> class GeospatialQuery
             input_coordinate,
             [this,
              approach,
+             level,
              &input_coordinate,
              &has_nearest,
              &has_big_component,
@@ -506,6 +509,7 @@ template <typename RTreeT, typename DataFacadeT> class GeospatialQuery
      * then we shouldn't snap to this edge.
      */
     std::pair<bool, bool> HasValidEdge(const CandidateSegment &segment,
+                                       const int level,
                                        const bool use_all_edges = false) const
     {
 
@@ -530,8 +534,9 @@ template <typename RTreeT, typename DataFacadeT> class GeospatialQuery
             reverse_edge_valid = data.reverse_segment_id.enabled;
         }
 
-        forward_edge_valid = forward_edge_valid && (data.is_startpoint || use_all_edges);
-        reverse_edge_valid = reverse_edge_valid && (data.is_startpoint || use_all_edges);
+        const bool is_requested = use_all_edges || (data.is_startpoint && level == data.level);
+        forward_edge_valid = forward_edge_valid && is_requested;
+        reverse_edge_valid = reverse_edge_valid && is_requested;
 
         return std::make_pair(forward_edge_valid, reverse_edge_valid);
     }

@@ -81,6 +81,7 @@ struct BaseParameters
     std::vector<boost::optional<double>> radiuses;
     std::vector<boost::optional<Bearing>> bearings;
     std::vector<boost::optional<Approach>> approaches;
+    std::vector<boost::optional<int>> levels;
     std::vector<std::string> exclude;
     boost::optional<OutputFormatType> format = OutputFormatType::JSON;
 
@@ -90,19 +91,20 @@ struct BaseParameters
     // Remove waypoints array from the response.
     bool skip_waypoints = false;
 
-    SnappingType snapping = SnappingType::Default;
+    SnappingType snapping = SnappingType::Any;
 
     BaseParameters(std::vector<util::Coordinate> coordinates_ = {},
                    std::vector<boost::optional<Hint>> hints_ = {},
                    std::vector<boost::optional<double>> radiuses_ = {},
                    std::vector<boost::optional<Bearing>> bearings_ = {},
                    std::vector<boost::optional<Approach>> approaches_ = {},
+                   std::vector<boost::optional<int>> levels_ = {},
                    bool generate_hints_ = true,
                    std::vector<std::string> exclude = {},
-                   const SnappingType snapping_ = SnappingType::Default)
+                   const SnappingType snapping_ = SnappingType::Any)
         : coordinates(std::move(coordinates_)), hints(std::move(hints_)),
           radiuses(std::move(radiuses_)), bearings(std::move(bearings_)),
-          approaches(std::move(approaches_)), exclude(std::move(exclude)),
+          approaches(std::move(approaches_)), levels(std::move(levels_)), exclude(std::move(exclude)),
           generate_hints(generate_hints_), snapping(snapping_)
     {
     }
@@ -113,6 +115,7 @@ struct BaseParameters
                (bearings.empty() || bearings.size() == coordinates.size()) &&
                (radiuses.empty() || radiuses.size() == coordinates.size()) &&
                (approaches.empty() || approaches.size() == coordinates.size()) &&
+               (snapping == SnappingType::Any || levels.size() == coordinates.size()) &&
                std::all_of(bearings.begin(),
                            bearings.end(),
                            [](const boost::optional<Bearing> &bearing_and_range) {
