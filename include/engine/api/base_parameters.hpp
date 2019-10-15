@@ -81,24 +81,26 @@ struct BaseParameters
     std::vector<boost::optional<double>> radiuses;
     std::vector<boost::optional<Bearing>> bearings;
     std::vector<boost::optional<Approach>> approaches;
+    std::vector<boost::optional<int>> levels;
     std::vector<std::string> exclude;
     boost::optional<OutputFormatType> format = OutputFormatType::JSON;
 
     // Adds hints to response which can be included in subsequent requests, see `hints` above.
     bool generate_hints = true;
 
-    SnappingType snapping = SnappingType::Default;
+    SnappingType snapping = SnappingType::Any;
 
     BaseParameters(const std::vector<util::Coordinate> coordinates_ = {},
                    const std::vector<boost::optional<Hint>> hints_ = {},
                    std::vector<boost::optional<double>> radiuses_ = {},
                    std::vector<boost::optional<Bearing>> bearings_ = {},
                    std::vector<boost::optional<Approach>> approaches_ = {},
+                   std::vector<boost::optional<int>> levels_ = {},
                    bool generate_hints_ = true,
                    std::vector<std::string> exclude = {},
-                   const SnappingType snapping_ = SnappingType::Default)
+                   const SnappingType snapping_ = SnappingType::Any)
         : coordinates(coordinates_), hints(hints_), radiuses(radiuses_), bearings(bearings_),
-          approaches(approaches_), exclude(std::move(exclude)), generate_hints(generate_hints_),
+          approaches(approaches_), levels(levels_), exclude(std::move(exclude)), generate_hints(generate_hints_),
           snapping(snapping_)
     {
     }
@@ -110,6 +112,7 @@ struct BaseParameters
                (bearings.empty() || bearings.size() == coordinates.size()) &&
                (radiuses.empty() || radiuses.size() == coordinates.size()) &&
                (approaches.empty() || approaches.size() == coordinates.size()) &&
+               (snapping == SnappingType::Any || levels.size() == coordinates.size()) &&
                std::all_of(bearings.begin(),
                            bearings.end(),
                            [](const boost::optional<Bearing> bearing_and_range) {

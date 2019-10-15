@@ -24,7 +24,8 @@ struct EdgeBasedNodeSegment
           reverse_segment_id{SPECIAL_SEGMENTID, false}, u(SPECIAL_NODEID), v(SPECIAL_NODEID),
           fwd_segment_position(std::numeric_limits<unsigned short>::max() >>
                                1), // >> 1 because we've only got 15 bits
-          is_startpoint(false)
+          is_startpoint(false),
+          level(0)
     {
     }
 
@@ -33,9 +34,10 @@ struct EdgeBasedNodeSegment
                                   NodeID u,
                                   NodeID v,
                                   unsigned short fwd_segment_position,
-                                  bool is_startpoint_)
+                                  bool is_startpoint_,
+                                  int level_)
         : forward_segment_id(forward_segment_id_), reverse_segment_id(reverse_segment_id_), u(u),
-          v(v), fwd_segment_position(fwd_segment_position), is_startpoint(is_startpoint_)
+          v(v), fwd_segment_position(fwd_segment_position), is_startpoint(is_startpoint_), level(level_)
     {
         BOOST_ASSERT(forward_segment_id.enabled || reverse_segment_id.enabled);
     }
@@ -46,6 +48,7 @@ struct EdgeBasedNodeSegment
     NodeID v;                     // node-based graph node ID of the target node
     unsigned short fwd_segment_position : 15; // segment id in a compressed geometry
     bool is_startpoint : 1;
+    int level;
 };
 }
 }

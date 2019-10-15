@@ -156,6 +156,10 @@ struct BaseParametersGrammar : boost::spirit::qi::grammar<Iterator, Signature>
             qi::lit("bearings=") >
             (-(qi::short_ > ',' > qi::short_))[ph::bind(add_bearing, qi::_r1, qi::_1)] % ';';
 
+        levels_rule = qi::lit("levels=") >
+                        (-qi::int_ %
+                         ';')[ph::bind(&engine::api::BaseParameters::levels, qi::_r1) = qi::_1];  
+
         approach_type.add("unrestricted", engine::Approach::UNRESTRICTED)("curb",
                                                                           engine::Approach::CURB);
         approach_rule = qi::lit("approaches=") >
@@ -185,6 +189,7 @@ struct BaseParametersGrammar : boost::spirit::qi::grammar<Iterator, Signature>
                     | generate_hints_rule(qi::_r1) //
                     | approach_rule(qi::_r1)       //
                     | exclude_rule(qi::_r1)        //
+                    | levels_rule(qi::_r1)         //
                     | snapping_rule(qi::_r1);
     }
 
@@ -201,6 +206,7 @@ struct BaseParametersGrammar : boost::spirit::qi::grammar<Iterator, Signature>
     qi::rule<Iterator, Signature> bearings_rule;
     qi::rule<Iterator, Signature> radiuses_rule;
     qi::rule<Iterator, Signature> hints_rule;
+    qi::rule<Iterator, Signature> levels_rule;
 
     qi::rule<Iterator, Signature> generate_hints_rule;
     qi::rule<Iterator, Signature> approach_rule;

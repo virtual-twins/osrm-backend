@@ -65,6 +65,7 @@ struct ExtractionWay
         is_left_hand_driving = false;
         highway_turn_classification = 0;
         access_turn_classification = 0;
+        level = 0;
     }
 
     // wrappers to allow assigning nil (nullptr) to string values
@@ -129,6 +130,9 @@ struct ExtractionWay
     // user classifications for turn penalties
     std::uint8_t highway_turn_classification : 4;
     std::uint8_t access_turn_classification : 4;
+
+    // level for indoor routing
+    std::int8_t level;
 };
 }
 }
