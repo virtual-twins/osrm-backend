@@ -644,6 +644,48 @@ inline bool argumentsToParameter(const Nan::FunctionCallbackInfo<v8::Value> &arg
         }
     }
 
+    if (obj->Has(Nan::New("levels").ToLocalChecked()))
+    {
+        v8::Local<v8::Value> levels = obj->Get(Nan::New("levels").ToLocalChecked());
+        if (levels.IsEmpty())
+            return false;
+
+        if (!levels->IsArray())
+        {
+            Nan::ThrowError("Levels must be an array numbers");
+            return false;
+        }
+
+        v8::Local<v8::Array> levels_array = v8::Local<v8::Array>::Cast(levels);
+
+        if (levels_array->Length() != params->coordinates.size())
+        {
+            Nan::ThrowError("Levels array must have the same length as coordinates array");
+            return false;
+        }
+
+        for (uint32_t i = 0; i < levels_array->Length(); ++i)
+        {
+            v8::Local<v8::Value> level = levels_array->Get(i);
+            if (level.IsEmpty())
+                return false;
+
+            if (level->IsNull())
+            {
+                params->levels.emplace_back();
+            }
+            else if (level->IsNumber())
+            {
+                params->levels.push_back(static_cast<int>(level->NumberValue()));
+            }
+            else
+            {
+                Nan::ThrowError("Level must be a number");
+                return false;
+            }
+        }
+    }
+
     if (obj->Has(Nan::New("generate_hints").ToLocalChecked()))
     {
         v8::Local<v8::Value> generate_hints = obj->Get(Nan::New("generate_hints").ToLocalChecked());
