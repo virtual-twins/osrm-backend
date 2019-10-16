@@ -36,7 +36,7 @@ module.exports = function () {
                     if (body && body.length) {
                         let destinations, exits, pronunciations, instructions, refs, bearings, turns, modes, times, classes,
                             distances, summary, intersections, lanes, locations, annotation, weight_name, weights, approaches,
-                            driving_sides;
+                            levels, driving_sides;
 
                         let json = JSON.parse(body);
 
@@ -65,6 +65,7 @@ module.exports = function () {
                             weight_name = this.weightName(json.routes[0]);
                             weights = this.weightList(json.routes[0]);
                             approaches = this.approachList(json.routes[0]);
+                            levels = this.levelList(json.routes[0]);
                         }
 
                         if (headers.has('status')) {
@@ -159,6 +160,9 @@ module.exports = function () {
                         if (headers.has('approaches')){
                             got.approaches = (approaches || '').trim();
                         }*/
+                        if (headers.has('levels')) {
+                            got.levels = (levels || '').trim();
+                        }
                         // if header matches 'a:*', parse out the values for *
                         // and return in that header
                         headers.forEach((k) => {
@@ -199,6 +203,7 @@ module.exports = function () {
                         putValue('weights', weights);
                         putValue('weight', weight);
                         putValue('approach', approaches);
+                        putValue('levels', levels);
 
                         if (driving_sides) {
                             putValue('driving_side', driving_sides);
@@ -238,7 +243,8 @@ module.exports = function () {
                     var params = this.overwriteParams(defaultParams, userParams),
                         waypoints = [],
                         bearings = [],
-                        approaches = [];
+                        approaches = [],
+                        levels = [];
 
                     if (row.bearings) {
                         got.bearings = row.bearings;
@@ -248,6 +254,11 @@ module.exports = function () {
                     if (row.approaches) {
                         got.approaches = row.approaches;
                         approaches = row.approaches.split(' ').filter(b => !!b);
+                    }
+
+                    if (row.levels) {
+                        got.levels = row.levels;
+                        levels = row.levels.split(' ').filter(b => !!b);
                     }
 
                     if (row.from && row.to) {
@@ -261,7 +272,7 @@ module.exports = function () {
 
                         got.from = row.from;
                         got.to = row.to;
-                        this.requestRoute(waypoints, bearings, approaches, params, afterRequest);
+                        this.requestRoute(waypoints, bearings, approaches, levels, params, afterRequest);
                     } else if (row.waypoints) {
                         row.waypoints.split(',').forEach((n) => {
                             var node = this.findNodeByName(n.trim());
@@ -269,7 +280,7 @@ module.exports = function () {
                             waypoints.push(node);
                         });
                         got.waypoints = row.waypoints;
-                        this.requestRoute(waypoints, bearings, approaches, params, afterRequest);
+                        this.requestRoute(waypoints, bearings, approaches, levels, params, afterRequest);
                     } else {
                         return cb(new Error('*** no waypoints'));
                     }
