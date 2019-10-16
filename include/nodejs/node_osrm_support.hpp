@@ -765,6 +765,7 @@ inline bool argumentsToParameter(const Napi::CallbackInfo &args,
             if (level.IsEmpty())
                 return false;
 
+            // TODO Check if level.IsInt32 instead of level.IsNumber
             if (level.IsNull())
             {
                 params->levels.emplace_back();
