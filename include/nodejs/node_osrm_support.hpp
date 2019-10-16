@@ -652,7 +652,7 @@ inline bool argumentsToParameter(const Nan::FunctionCallbackInfo<v8::Value> &arg
 
         if (!levels->IsArray())
         {
-            Nan::ThrowError("Levels must be an array numbers");
+            Nan::ThrowError("Levels must be an array of integers");
             return false;
         }
 
