@@ -193,6 +193,9 @@ class BasePlugin
                 });
                 continue;
             }
+
+            const int level = (parameters.snapping == api::BaseParameters::SnappingType::Any) ? 0 : *parameters.levels[i];
+
             if (use_bearings && parameters.bearings[i])
             {
                 phantom_nodes[i] =
@@ -201,12 +204,13 @@ class BasePlugin
                                                       parameters.bearings[i]->bearing,
                                                       parameters.bearings[i]->range,
                                                       approach,
+                                                      level,
                                                       use_all_edges);
             }
             else
             {
                 phantom_nodes[i] = facade.NearestPhantomNodesInRange(
-                    parameters.coordinates[i], radiuses[i], approach, use_all_edges);
+                    parameters.coordinates[i], radiuses[i], approach, level, use_all_edges);
             }
         }
 
@@ -244,6 +248,8 @@ class BasePlugin
                 continue;
             }
 
+            const int level = (parameters.snapping == api::BaseParameters::SnappingType::Any) ? 0 : *parameters.levels[i];
+
             if (use_bearings && parameters.bearings[i])
             {
                 if (use_radiuses && parameters.radiuses[i])
@@ -253,7 +259,8 @@ class BasePlugin
                                                                   *parameters.radiuses[i],
                                                                   parameters.bearings[i]->bearing,
                                                                   parameters.bearings[i]->range,
-                                                                  approach);
+                                                                  approach,
+                                                                  level);
                 }
                 else
                 {
@@ -261,7 +268,8 @@ class BasePlugin
                                                                   number_of_results,
                                                                   parameters.bearings[i]->bearing,
                                                                   parameters.bearings[i]->range,
-                                                                  approach);
+                                                                  approach,
+                                                                  level);
                 }
             }
             else
@@ -271,12 +279,13 @@ class BasePlugin
                     phantom_nodes[i] = facade.NearestPhantomNodes(parameters.coordinates[i],
                                                                   number_of_results,
                                                                   *parameters.radiuses[i],
-                                                                  approach);
+                                                                  approach,
+                                                                  level);
                 }
                 else
                 {
                     phantom_nodes[i] = facade.NearestPhantomNodes(
-                        parameters.coordinates[i], number_of_results, approach);
+                        parameters.coordinates[i], number_of_results, approach, level);
                 }
             }
 
@@ -315,6 +324,8 @@ class BasePlugin
                 continue;
             }
 
+            const int level = (parameters.snapping == api::BaseParameters::SnappingType::Any) ? 0 : *parameters.levels[i];
+
             if (use_bearings && parameters.bearings[i])
             {
                 if (use_radiuses && parameters.radiuses[i])
@@ -326,6 +337,7 @@ class BasePlugin
                             parameters.bearings[i]->bearing,
                             parameters.bearings[i]->range,
                             approach,
+                            level,
                             use_all_edges);
                 }
                 else
@@ -336,6 +348,7 @@ class BasePlugin
                             parameters.bearings[i]->bearing,
                             parameters.bearings[i]->range,
                             approach,
+                            level,
                             use_all_edges);
                 }
             }
@@ -348,13 +361,14 @@ class BasePlugin
                             parameters.coordinates[i],
                             *parameters.radiuses[i],
                             approach,
+                            level,
                             use_all_edges);
                 }
                 else
                 {
                     phantom_node_pairs[i] =
                         facade.NearestPhantomNodeWithAlternativeFromBigComponent(
-                            parameters.coordinates[i], approach, use_all_edges);
+                            parameters.coordinates[i], approach, level, use_all_edges);
                 }
             }
 

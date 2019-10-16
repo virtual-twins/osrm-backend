@@ -316,12 +316,13 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
     NearestPhantomNodesInRange(const util::Coordinate input_coordinate,
                                const float max_distance,
                                const Approach approach,
+                               const int level,
                                const bool use_all_edges) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodesInRange(
-            input_coordinate, max_distance, approach, use_all_edges);
+            input_coordinate, max_distance, approach, level, use_all_edges);
     }
 
     std::vector<PhantomNodeWithDistance>
@@ -330,34 +331,37 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
                                const int bearing,
                                const int bearing_range,
                                const Approach approach,
+                               const int level,
                                const bool use_all_edges) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodesInRange(
-            input_coordinate, max_distance, bearing, bearing_range, approach, use_all_edges);
+            input_coordinate, max_distance, bearing, bearing_range, approach, level, use_all_edges);
     }
 
     std::vector<PhantomNodeWithDistance>
     NearestPhantomNodes(const util::Coordinate input_coordinate,
                         const unsigned max_results,
-                        const Approach approach) const override final
+                        const Approach approach,
+                        const int level) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
-        return m_geospatial_query->NearestPhantomNodes(input_coordinate, max_results, approach);
+        return m_geospatial_query->NearestPhantomNodes(input_coordinate, max_results, approach, level);
     }
 
     std::vector<PhantomNodeWithDistance>
     NearestPhantomNodes(const util::Coordinate input_coordinate,
                         const unsigned max_results,
                         const double max_distance,
-                        const Approach approach) const override final
+                        const Approach approach,
+                        const int level) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodes(
-            input_coordinate, max_results, max_distance, approach);
+            input_coordinate, max_results, max_distance, approach, level);
     }
 
     std::vector<PhantomNodeWithDistance>
@@ -365,12 +369,13 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
                         const unsigned max_results,
                         const int bearing,
                         const int bearing_range,
-                        const Approach approach) const override final
+                        const Approach approach,
+                        const int level) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodes(
-            input_coordinate, max_results, bearing, bearing_range, approach);
+            input_coordinate, max_results, bearing, bearing_range, approach, level);
     }
 
     std::vector<PhantomNodeWithDistance>
@@ -379,35 +384,38 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
                         const double max_distance,
                         const int bearing,
                         const int bearing_range,
-                        const Approach approach) const override final
+                        const Approach approach,
+                        const int level) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodes(
-            input_coordinate, max_results, max_distance, bearing, bearing_range, approach);
+            input_coordinate, max_results, max_distance, bearing, bearing_range, approach, level);
     }
 
     std::pair<PhantomNode, PhantomNode>
     NearestPhantomNodeWithAlternativeFromBigComponent(const util::Coordinate input_coordinate,
                                                       const Approach approach,
+                                                      const int level,
                                                       const bool use_all_edges) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodeWithAlternativeFromBigComponent(
-            input_coordinate, approach, use_all_edges);
+            input_coordinate, approach, level, use_all_edges);
     }
 
     std::pair<PhantomNode, PhantomNode>
     NearestPhantomNodeWithAlternativeFromBigComponent(const util::Coordinate input_coordinate,
                                                       const double max_distance,
                                                       const Approach approach,
+                                                      const int level,
                                                       const bool use_all_edges) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodeWithAlternativeFromBigComponent(
-            input_coordinate, max_distance, approach, use_all_edges);
+            input_coordinate, max_distance, approach, level, use_all_edges);
     }
 
     std::pair<PhantomNode, PhantomNode>
@@ -416,12 +424,13 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
                                                       const int bearing,
                                                       const int bearing_range,
                                                       const Approach approach,
+                                                      const int level,
                                                       const bool use_all_edges) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodeWithAlternativeFromBigComponent(
-            input_coordinate, max_distance, bearing, bearing_range, approach, use_all_edges);
+            input_coordinate, max_distance, bearing, bearing_range, approach, level, use_all_edges);
     }
 
     std::pair<PhantomNode, PhantomNode>
@@ -429,12 +438,13 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
                                                       const int bearing,
                                                       const int bearing_range,
                                                       const Approach approach,
+                                                      const int level,
                                                       const bool use_all_edges) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodeWithAlternativeFromBigComponent(
-            input_coordinate, bearing, bearing_range, approach, use_all_edges);
+            input_coordinate, bearing, bearing_range, approach, level, use_all_edges);
     }
 
     std::uint32_t GetCheckSum() const override final { return m_check_sum; }

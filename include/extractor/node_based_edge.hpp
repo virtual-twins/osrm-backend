@@ -29,6 +29,7 @@ struct NodeBasedEdgeClassification
     RoadClassification road_classification;       // 16 2
     std::uint8_t highway_turn_classification : 4; // 4
     std::uint8_t access_turn_classification : 4;  // 4
+    std::int8_t level;                            // 8
 
     NodeBasedEdgeClassification();
 
@@ -41,12 +42,14 @@ struct NodeBasedEdgeClassification
                                 const bool restricted,
                                 RoadClassification road_classification,
                                 const std::uint8_t highway_turn_classification,
-                                const std::uint8_t access_turn_classification)
+                                const std::uint8_t access_turn_classification,
+                                const std::int8_t level)
         : forward(forward), backward(backward), is_split(is_split), roundabout(roundabout),
           circular(circular), startpoint(startpoint), restricted(restricted),
           road_classification(road_classification),
           highway_turn_classification(highway_turn_classification),
-          access_turn_classification(access_turn_classification)
+          access_turn_classification(access_turn_classification),
+          level(level)
     {
     }
 
@@ -55,7 +58,7 @@ struct NodeBasedEdgeClassification
         return (road_classification == other.road_classification) && (forward == other.forward) &&
                (backward == other.backward) && (is_split) == (other.is_split) &&
                (roundabout == other.roundabout) && (circular == other.circular) &&
-               (startpoint == other.startpoint) && (restricted == other.restricted);
+               (startpoint == other.startpoint) && (restricted == other.restricted) && (level == other.level);
     }
 };
 
@@ -201,7 +204,7 @@ inline NodeBasedEdgeWithOSM::NodeBasedEdgeWithOSM()
 {
 }
 
-static_assert(sizeof(extractor::NodeBasedEdge) == 32,
+static_assert(sizeof(extractor::NodeBasedEdge) == 36,
               "Size of extractor::NodeBasedEdge type is "
               "bigger than expected. This will influence "
               "memory consumption.");

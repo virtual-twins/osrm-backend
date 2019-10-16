@@ -136,6 +136,7 @@ template <unsigned NUM_NODES, unsigned NUM_EDGES> struct RandomGraphFixture
             data.u = edge_udist(g);
             data.v = edge_udist(g);
             data.is_startpoint = true;
+            data.level = 0;
             if (used_edges.find(std::pair<unsigned, unsigned>(
                     std::min(data.u, data.v), std::max(data.u, data.v))) == used_edges.end())
             {
@@ -152,7 +153,7 @@ template <unsigned NUM_NODES, unsigned NUM_EDGES> struct RandomGraphFixture
 struct GraphFixture
 {
     GraphFixture(const std::vector<std::pair<FloatLongitude, FloatLatitude>> &input_coords,
-                 const std::vector<std::tuple<unsigned, unsigned, bool>> &input_edges)
+                 const std::vector<std::tuple<unsigned, unsigned, bool, signed>> &input_edges)
     {
 
         for (unsigned i = 0; i < input_coords.size(); i++)
@@ -173,6 +174,7 @@ struct GraphFixture
             d.reverse_segment_id = {std::get<0>(pair), true};
             d.fwd_segment_position = 0;
             d.is_startpoint = std::get<2>(pair);
+            d.level = std::get<3>(pair);
             edges.emplace_back(d);
         }
     }
@@ -301,7 +303,7 @@ BOOST_FIXTURE_TEST_CASE(construct_multiple_levels_test, TestRandomGraphFixture_M
 BOOST_AUTO_TEST_CASE(regression_test)
 {
     using Coord = std::pair<FloatLongitude, FloatLatitude>;
-    using Edge = std::tuple<unsigned, unsigned, bool>;
+    using Edge = std::tuple<unsigned, unsigned, bool, signed>;
     GraphFixture fixture(
         {
             Coord{FloatLongitude{0.0}, FloatLatitude{40.0}},   //
@@ -315,7 +317,7 @@ BOOST_AUTO_TEST_CASE(regression_test)
             Coord{FloatLongitude{105.0}, FloatLatitude{5.0}},  //
             Coord{FloatLongitude{110.0}, FloatLatitude{0.0}},  //
         },
-        {Edge(0, 1, true), Edge(2, 3, true), Edge(4, 5, true), Edge(6, 7, true), Edge(8, 9, true)});
+        {Edge(0, 1, true, 0), Edge(2, 3, true, 0), Edge(4, 5, true, 0), Edge(6, 7, true, 0), Edge(8, 9, true, 0)});
 
     TemporaryFile tmp;
     auto rtree = make_rtree<MiniStaticRTree>(tmp.path, fixture);
@@ -337,13 +339,13 @@ BOOST_AUTO_TEST_CASE(regression_test)
 BOOST_AUTO_TEST_CASE(radius_regression_test)
 {
     using Coord = std::pair<FloatLongitude, FloatLatitude>;
-    using Edge = std::tuple<unsigned, unsigned, bool>;
+    using Edge = std::tuple<unsigned, unsigned, bool, signed>;
     GraphFixture fixture(
         {
             Coord(FloatLongitude{0.0}, FloatLatitude{0.0}),
             Coord(FloatLongitude{10.0}, FloatLatitude{10.0}),
         },
-        {Edge(0, 1, true), Edge(1, 0, true)});
+        {Edge(0, 1, true, 0), Edge(1, 0, true, 0)});
 
     TemporaryFile tmp;
     auto rtree = make_rtree<MiniStaticRTree>(tmp.path, fixture);
@@ -363,13 +365,13 @@ BOOST_AUTO_TEST_CASE(radius_regression_test)
 BOOST_AUTO_TEST_CASE(permissive_edge_snapping)
 {
     using Coord = std::pair<FloatLongitude, FloatLatitude>;
-    using Edge = std::tuple<unsigned, unsigned, bool>;
+    using Edge = std::tuple<unsigned, unsigned, bool, signed>;
     GraphFixture fixture(
         {
             Coord(FloatLongitude{0.0}, FloatLatitude{0.0}),
             Coord(FloatLongitude{0.001}, FloatLatitude{0.001}),
         },
-        {Edge(0, 1, true), Edge(1, 0, false)});
+        {Edge(0, 1, true, 0), Edge(1, 0, false, 0)});
 
     TemporaryFile tmp;
     auto rtree = make_rtree<MiniStaticRTree>(tmp.path, fixture);
@@ -395,13 +397,13 @@ BOOST_AUTO_TEST_CASE(permissive_edge_snapping)
 BOOST_AUTO_TEST_CASE(bearing_tests)
 {
     using Coord = std::pair<FloatLongitude, FloatLatitude>;
-    using Edge = std::tuple<unsigned, unsigned, bool>;
+    using Edge = std::tuple<unsigned, unsigned, bool, signed>;
     GraphFixture fixture(
         {
             Coord(FloatLongitude{0.0}, FloatLatitude{0.0}),
             Coord(FloatLongitude{10.0}, FloatLatitude{10.0}),
         },
-        {Edge(0, 1, true), Edge(1, 0, true)});
+        {Edge(0, 1, true, 0), Edge(1, 0, true, 0)});
 
     TemporaryFile tmp;
     auto rtree = make_rtree<MiniStaticRTree>(tmp.path, fixture);
@@ -468,7 +470,7 @@ BOOST_AUTO_TEST_CASE(bearing_tests)
 BOOST_AUTO_TEST_CASE(bbox_search_tests)
 {
     using Coord = std::pair<FloatLongitude, FloatLatitude>;
-    using Edge = std::tuple<unsigned, unsigned, bool>;
+    using Edge = std::tuple<unsigned, unsigned, bool, signed>;
 
     GraphFixture fixture(
         {
@@ -478,7 +480,7 @@ BOOST_AUTO_TEST_CASE(bbox_search_tests)
             Coord(FloatLongitude{3.0}, FloatLatitude{3.0}),
             Coord(FloatLongitude{4.0}, FloatLatitude{4.0}),
         },
-        {Edge(0, 1, true), Edge(1, 2, true), Edge(2, 3, true), Edge(3, 4, true)});
+        {Edge(0, 1, true, 0), Edge(1, 2, true, 0), Edge(2, 3, true, 0), Edge(3, 4, true, 0)});
 
     TemporaryFile tmp;
     auto rtree = make_rtree<MiniStaticRTree>(tmp.path, fixture);
