@@ -739,6 +739,48 @@ inline bool argumentsToParameter(const Napi::CallbackInfo &args,
         }
     }
 
+    if (obj.Has("levels"))
+    {
+        v8::Local<v8::Value> levels = obj.Get("levels");
+        if (levels.IsEmpty())
+            return false;
+
+        if (!levels.IsArray())
+        {
+            ThrowError(args.Env(), "Levels must be an array numbers");
+            return false;
+        }
+
+        v8::Local<v8::Array> levels_array = v8::Local<v8::Array>::Cast(levels);
+
+        if (levels_array.Length() != params->coordinates.size())
+        {
+            ThrowError(args.Env(), "Levels array must have the same length as coordinates array");
+            return false;
+        }
+
+        for (uint32_t i = 0; i < levels_array.Length(); ++i)
+        {
+            v8::Local<v8::Value> level = levels_array.Get(i);
+            if (level.IsEmpty())
+                return false;
+
+            if (level.IsNull())
+            {
+                params->levels.emplace_back();
+            }
+            else if (level.IsNumber())
+            {
+                params->levels.push_back(static_cast<int>(level.NumberValue()));
+            }
+            else
+            {
+                ThrowError(args.Env(), "Level must be a number");
+                return false;
+            }
+        }
+    }
+
     if (obj.Has("generate_hints"))
     {
         Napi::Value generate_hints = obj.Get("generate_hints");
