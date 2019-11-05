@@ -88,6 +88,9 @@ struct BaseParameters
     // Adds hints to response which can be included in subsequent requests, see `hints` above.
     bool generate_hints = true;
 
+    // Remove waypoints array from the response.
+    bool skip_waypoints = false;
+
     SnappingType snapping = SnappingType::Any;
 
     BaseParameters(const std::vector<util::Coordinate> coordinates_ = {},

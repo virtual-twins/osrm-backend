@@ -152,6 +152,10 @@ struct BaseParametersGrammar : boost::spirit::qi::grammar<Iterator, Signature>
             qi::lit("generate_hints=") >
             qi::bool_[ph::bind(&engine::api::BaseParameters::generate_hints, qi::_r1) = qi::_1];
 
+        skip_waypoints_rule =
+            qi::lit("skip_waypoints=") >
+            qi::bool_[ph::bind(&engine::api::BaseParameters::skip_waypoints, qi::_r1) = qi::_1];
+
         bearings_rule =
             qi::lit("bearings=") >
             (-(qi::short_ > ',' > qi::short_))[ph::bind(add_bearing, qi::_r1, qi::_1)] % ';';
@@ -187,6 +191,7 @@ struct BaseParametersGrammar : boost::spirit::qi::grammar<Iterator, Signature>
                     | hints_rule(qi::_r1)          //
                     | bearings_rule(qi::_r1)       //
                     | generate_hints_rule(qi::_r1) //
+                    | skip_waypoints_rule(qi::_r1) //
                     | approach_rule(qi::_r1)       //
                     | exclude_rule(qi::_r1)        //
                     | levels_rule(qi::_r1)         //
@@ -209,6 +214,7 @@ struct BaseParametersGrammar : boost::spirit::qi::grammar<Iterator, Signature>
     qi::rule<Iterator, Signature> levels_rule;
 
     qi::rule<Iterator, Signature> generate_hints_rule;
+    qi::rule<Iterator, Signature> skip_waypoints_rule;
     qi::rule<Iterator, Signature> approach_rule;
     qi::rule<Iterator, Signature> exclude_rule;
 

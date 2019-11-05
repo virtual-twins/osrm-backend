@@ -2,12 +2,14 @@
   - Changes from 5.21.0
     - Build:
       - ADDED: optionally build Node `lts` and `latest` bindings [#5347](https://github.com/Project-OSRM/osrm-backend/pull/5347)
+      - FIXED: pessimistic calls to std::move [#5560](https://github.com/Project-OSRM/osrm-backend/pull/5561)
     - Features:
       - ADDED: new waypoints parameter to the `route` plugin, enabling silent waypoints [#5345](https://github.com/Project-OSRM/osrm-backend/pull/5345)
       - ADDED: data timestamp information in the response (saved in new file `.osrm.timestamp`). [#5115](https://github.com/Project-OSRM/osrm-backend/issues/5115)
       - ADDED: new API parameter - `snapping=any|default` to allow snapping to previously unsnappable edges [#5361](https://github.com/Project-OSRM/osrm-backend/pull/5361)
       - ADDED: keepalive support to the osrm-routed HTTP server [#5518](https://github.com/Project-OSRM/osrm-backend/pull/5518)
       - ADDED: flatbuffers output format support [#5513](https://github.com/Project-OSRM/osrm-backend/pull/5513)
+      - ADDED: Global 'skip_waypoints' option [#5556](https://github.com/Project-OSRM/osrm-backend/pull/5556)
     - Routing:
       - CHANGED: allow routing past `barrier=arch` [#5352](https://github.com/Project-OSRM/osrm-backend/pull/5352)
       - CHANGED: default car weight was reduced to 2000 kg. [#5371](https://github.com/Project-OSRM/osrm-backend/pull/5371)
