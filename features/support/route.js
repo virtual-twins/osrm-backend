@@ -105,13 +105,19 @@ module.exports = function () {
         return this.requestPath('table', params, callback);
     };
 
-    this.requestTrip = (waypoints, userParams, callback) => {
+    this.requestTrip = (waypoints, levels, userParams, callback) => {
+        if (levels.length && levels.length !== waypoints.length) throw new Error('*** number of levels does not equal the number of waypoints');
+
         var defaults = {
                 output: 'json'
             },
             params = this.overwriteParams(defaults, userParams);
 
         params.coordinates = encodeWaypoints(waypoints);
+
+        if (levels.length) {
+            params.levels = levels.join(';');
+        }
 
         return this.requestPath('trip', params, callback);
     };
