@@ -53,6 +53,7 @@ Feature: Turn Function Information
           print ('source_speed ' .. string.format("%s", tostring(turn.source_speed)))
           print ('source_priority_class ' .. string.format("%s", tostring(turn.source_priority_class)))
           print ('source_mode ' .. string.format("%s", tostring(turn.source_mode)))
+          print ('source_level ' .. string.format("%s", tostring(turn.source_level)))
 
           print ('target_restricted ' .. string.format("%s", tostring(turn.target_restricted)))
           print ('target_is_motorway ' .. string.format("%s", tostring(turn.target_is_motorway)))
@@ -63,6 +64,7 @@ Feature: Turn Function Information
           print ('target_speed ' .. string.format("%s", tostring(turn.target_speed)))
           print ('target_priority_class ' .. string.format("%s", tostring(turn.target_priority_class)))
           print ('target_mode ' .. string.format("%s", tostring(turn.target_mode)))
+          print ('target_level ' .. string.format("%s", tostring(turn.target_level)))
 
           print ('number_of_roads ' .. string.format("%s", tostring(turn.number_of_roads)))
           if not turn.is_u_turn then
