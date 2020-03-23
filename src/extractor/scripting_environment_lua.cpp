@@ -758,6 +758,8 @@ void Sol2ScriptingEnvironment::InitContext(LuaScriptingContext &context)
             &ExtractionTurn::source_speed,
             "source_priority_class",
             &ExtractionTurn::source_priority_class,
+            "source_level",
+            &ExtractionTurn::source_level,
 
             "target_restricted",
             &ExtractionTurn::target_restricted,
@@ -777,6 +779,8 @@ void Sol2ScriptingEnvironment::InitContext(LuaScriptingContext &context)
             &ExtractionTurn::target_speed,
             "target_priority_class",
             &ExtractionTurn::target_priority_class,
+            "target_level",
+            &ExtractionTurn::target_level,
 
             "roads_on_the_right",
             &ExtractionTurn::roads_on_the_right,

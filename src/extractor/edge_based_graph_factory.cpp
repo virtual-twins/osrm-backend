@@ -630,6 +630,8 @@ void EdgeBasedGraphFactory::GenerateEdgeExpandedEdges(
                  edge_data1.duration) *
                     36,
                 edge_data1.flags.road_classification.GetPriority(),
+                edge_data1.flags.level,
+
                 // target info
                 edge_data2.flags.restricted,
                 m_edge_based_node_container.GetAnnotation(edge_data2.annotation_data).travel_mode,
@@ -642,6 +644,8 @@ void EdgeBasedGraphFactory::GenerateEdgeExpandedEdges(
                  edge_data2.duration) *
                     36,
                 edge_data2.flags.road_classification.GetPriority(),
+                edge_data2.flags.level,
+                
                 // connected roads
                 road_legs_on_the_right,
                 road_legs_on_the_left);

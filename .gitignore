@@ -48,6 +48,7 @@ Thumbs.db
 #######################
 /_build*
 /build/
+/vtbuild/
 /example/build/
 /test/data/monaco*
 /test/data/ch
