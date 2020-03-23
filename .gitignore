@@ -43,6 +43,7 @@ Thumbs.db
 #######################
 /_build*
 /build/
+/vtbuild/
 /example/build/
 /test/data/monaco.osrm*
 /test/data/ch
