@@ -731,9 +731,6 @@ class RouteAPI : public BaseAPI
         std::vector<guidance::LegGeometry> leg_geometries = legs_info.second;
 
         auto route = guidance::assembleRoute(legs);
-        
-        //boost::optional<util::json::Value> json_overview =
-        //    MakeGeometry(MakeOverview(leg_geometries));
 
         boost::optional<util::json::Value> json_overview = MakeGeometry(MakeVtOverview(leg_geometries));
 
