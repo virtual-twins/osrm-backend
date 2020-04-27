@@ -88,6 +88,19 @@ util::json::Object makeGeoJSONGeometry(ForwardIter begin, ForwardIter end)
     return geojson;
 }
 
+template <typename ForwardIter>
+util::json::Object makeVtGeometry(ForwardIter begin, ForwardIter end)
+{
+    util::json::Object json;
+    util::json::Array ids;
+    std::for_each(begin, end, [&ids](const OSMNodeID osm_node_id) {
+        ids.values.push_back(static_cast<std::uint64_t>(osm_node_id));
+    });
+    json.values["osm_node_ids"] = std::move(ids);
+
+    return json;
+}
+
 util::json::Object makeStepManeuver(const guidance::StepManeuver &maneuver);
 
 util::json::Object makeRouteStep(guidance::RouteStep step, util::json::Value geometry);
