@@ -211,7 +211,7 @@ class RouteAPI : public BaseAPI
     }
 
     boost::optional<util::json::Value>
-    MakeGeometry(boost::optional<std::vector<OSMNodeID>> &&annotations) const
+    MakeGeometry(boost::optional<std::vector<NodeID>> &&annotations) const
     {
         boost::optional<util::json::Value> json_geometry;
         if (annotations)
@@ -1026,7 +1026,7 @@ class RouteAPI : public BaseAPI
         return overview;
     }
 
-    boost::optional<std::vector<OSMNodeID>>
+    boost::optional<std::vector<NodeID>>
     MakeVtOverview(const std::vector<guidance::LegGeometry> &leg_geometries) const
     {
         return guidance::assembleVtOverview(leg_geometries);

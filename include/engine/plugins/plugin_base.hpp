@@ -197,6 +197,8 @@ class BasePlugin
                 continue;
             }
 
+            const int level = (parameters.snapping == api::BaseParameters::SnappingType::Any) ? 0 : *parameters.levels[i];
+
             phantom_nodes[i] = facade.NearestPhantomNodesInRange(
                 parameters.coordinates[i],
                 radiuses[i],
@@ -239,6 +241,8 @@ class BasePlugin
                 continue;
             }
 
+            const int level = (parameters.snapping == api::BaseParameters::SnappingType::Any) ? 0 : *parameters.levels[i];
+
             phantom_nodes[i] = facade.NearestPhantomNodes(
                 parameters.coordinates[i],
                 number_of_results,
@@ -246,7 +250,7 @@ class BasePlugin
                 use_bearings ? parameters.bearings[i] : std::nullopt,
                 use_approaches && parameters.approaches[i] ? parameters.approaches[i].value()
                                                            : engine::Approach::UNRESTRICTED,
-                level));
+                level);
 
             // we didn't find a fitting node, return error
             if (phantom_nodes[i].empty())
@@ -282,6 +286,8 @@ class BasePlugin
                 // we don't set the second one - it will be marked as invalid
                 continue;
             }
+
+            const int level = (parameters.snapping == api::BaseParameters::SnappingType::Any) ? 0 : *parameters.levels[i];
 
             alternatives[i] = facade.NearestCandidatesWithAlternativeFromBigComponent(
                 parameters.coordinates[i],

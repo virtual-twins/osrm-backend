@@ -13,7 +13,7 @@ namespace osrm::engine::guidance
 std::vector<util::Coordinate> assembleOverview(const std::vector<LegGeometry> &leg_geometries,
                                                const bool use_simplification);
 
-std::vector<OSMNodeID> assembleVtOverview(const std::vector<LegGeometry> &leg_geometries);
+std::vector<NodeID> assembleVtOverview(const std::vector<LegGeometry> &leg_geometries);
 
 } // namespace osrm::engine::guidance
 

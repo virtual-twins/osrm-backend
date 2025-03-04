@@ -561,7 +561,7 @@ template <typename RTreeT, typename DataFacadeT> class GeospatialQuery
      * then we shouldn't snap to this edge.
      */
     std::pair<bool, bool> HasValidEdge(const CandidateSegment &segment,
-                                       const int level,
+                                       const std::optional<int> level,
                                        const bool use_all_edges = false) const
     {
 
