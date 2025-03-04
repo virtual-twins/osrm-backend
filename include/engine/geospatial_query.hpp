@@ -152,7 +152,7 @@ template <typename RTreeT, typename DataFacadeT> class GeospatialQuery
                 auto not_big =
                     has_big_component && segment.fixed_projected_coordinate != big_component_coord;
 
-                const auto valid_edges = HasValidEdge(segment, level, use_all_edges); // TODO check if needed
+                //const auto valid_edges = HasValidEdge(segment, level, use_all_edges); // TODO check if needed
 
                 /**
                  *
