@@ -441,7 +441,7 @@ void ExtractorCallbacks::ProcessWay(const osmium::Way &input_way, const Extracti
                                      road_classification,
                                      parsed_way.highway_turn_classification,
                                      parsed_way.access_turn_classification,
-                                     parsed_way.level}}};
+                                     parsed_way.level}};
 
                                 external_memory.all_edges_list.push_back(InternalExtractorEdge(
                                     edge, forward_weight_data, forward_duration_data, {}));
