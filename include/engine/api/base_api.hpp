@@ -58,7 +58,7 @@ class BaseAPI
         };
         const auto toOsmId = [this](const auto &phantom) {
                     return std::string(
-                        facade.GetOSMNodeIDOfNode(phantom.forward_segment_id.id);
+                        facade.GetOSMNodeIDOfNode(phantom.forward_segment_id.id));
                 };
         const auto noEmpty = [](const auto &name) { return !name.empty(); };
 
@@ -72,6 +72,9 @@ class BaseAPI
         std::string waypoint_osm_id = boost::algorithm::join(
             candidates | boost::adaptors::transformed(toOsmId) | boost::adaptors::filtered(noEmpty),
             INTERSECTION_DELIMITER);
+
+        // TODO casting may be more elegant..
+        OSMNodeID waypoint_osm_id_number = OSMNodeID{static_cast<std::uint64_t>(std::stoi(waypoint_osm_id))};
 
         const auto &snapped_location = candidatesSnappedLocation(candidates);
         const auto &input_location = candidatesInputLocation(candidates);
@@ -89,7 +92,7 @@ class BaseAPI
                 snapped_location,
                 util::coordinate_calculation::greatCircleDistance(snapped_location, input_location),
                 waypoint_name,
-                waypoint_osm_id
+                waypoint_osm_id_number,
                 {std::move(seg_hints)});
         }
         else
@@ -98,7 +101,7 @@ class BaseAPI
                 snapped_location,
                 util::coordinate_calculation::greatCircleDistance(snapped_location, input_location),
                 waypoint_name,
-                waypoint_osm_id);
+                waypoint_osm_id_number);
         }
     }
 
