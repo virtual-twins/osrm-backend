@@ -246,7 +246,7 @@ util::json::Object makeWaypoint(const util::Coordinate &location,
     waypoint.values.emplace("location", detail::coordinateToLonLat(location));
     waypoint.values.emplace("name", std::move(name));
     waypoint.values.emplace("distance", distance);
-    waypoint.values.emplace("osm_node_id", tatic_cast<std::uint64_t>(osm_node_id)); // TODO may remove casting
+    waypoint.values.emplace("osm_node_id", static_cast<std::uint64_t>(osm_node_id)); // TODO may remove casting
     return waypoint;
 }
 
