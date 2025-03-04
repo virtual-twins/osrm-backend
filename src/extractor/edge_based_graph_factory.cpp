@@ -436,7 +436,8 @@ EdgeBasedGraphFactory::GenerateEdgeExpandedNodes(const WayRestrictionMap &way_re
                                                         current_edge_source_coordinate_id,
                                                         current_edge_target_coordinate_id,
                                                         i,
-                                                        forward_data.flags.startpoint);
+                                                        forward_data.flags.startpoint,
+                                                        forward_data.flags.level);
 
                 current_edge_source_coordinate_id = current_edge_target_coordinate_id;
             }
