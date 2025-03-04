@@ -83,17 +83,17 @@ std::vector<util::Coordinate> assembleOverview(const std::vector<LegGeometry> &l
     return overview_geometry;
 }
 
-std::vector<OSMNodeID> assembleVtOverview(const std::vector<LegGeometry> &leg_geometries)
+std::vector<NodeID> assembleVtOverview(const std::vector<LegGeometry> &leg_geometries)
 {
     auto overview_size =
         std::accumulate(leg_geometries.begin(),
                         leg_geometries.end(),
                         0,
                         [](const std::size_t sum, const LegGeometry &leg_geometry) {
-                            return sum + leg_geometry.osm_node_ids.size();
+                            return sum + leg_geometry.node_ids.size();
                         }) -
         leg_geometries.size() + 1;
-    std::vector<OSMNodeID> overview_ids;
+    std::vector<NodeID> overview_ids;
     overview_ids.reserve(overview_size);
 
     using GeometryIter = decltype(overview_ids)::const_iterator;
@@ -112,7 +112,7 @@ std::vector<OSMNodeID> assembleVtOverview(const std::vector<LegGeometry> &leg_ge
 
     for (const auto &geometry : leg_geometries)
     {
-        insert_without_overlap(geometry.osm_node_ids.begin(), geometry.osm_node_ids.end());
+        insert_without_overlap(geometry.node_ids.begin(), geometry.node_ids.end());
     }
 
     return overview_ids;
