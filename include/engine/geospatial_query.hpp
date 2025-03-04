@@ -562,7 +562,7 @@ template <typename RTreeT, typename DataFacadeT> class GeospatialQuery
      */
     std::pair<bool, bool> HasValidEdge(const CandidateSegment &segment,
                                        const std::optional<int> level,
-                                       const bool use_all_edges = false) const
+                                       const std::optional<bool> use_all_edges = false) const
     {
 
         bool forward_edge_valid = false;

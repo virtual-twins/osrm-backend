@@ -89,8 +89,8 @@ util::json::Object makeVtGeometry(ForwardIter begin, ForwardIter end)
 {
     util::json::Object json;
     util::json::Array ids;
-    std::for_each(begin, end, [&ids](const OSMNodeID osm_node_id) {
-        ids.values.push_back(static_cast<std::uint64_t>(osm_node_id));
+    std::for_each(begin, end, [&ids](const NodeID osm_node_id) {
+        ids.values.push_back(osm_node_id);
     });
     json.values["osm_node_ids"] = std::move(ids);
 
