@@ -78,7 +78,7 @@ struct BaseParameters
     std::vector<std::optional<double>> radiuses;
     std::vector<std::optional<Bearing>> bearings;
     std::vector<std::optional<Approach>> approaches;
-    std::vector<boost::optional<int>> levels;
+    std::vector<std::optional<int>> levels;
     std::vector<std::string> exclude;
     std::optional<OutputFormatType> format = OutputFormatType::JSON;
 
