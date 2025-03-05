@@ -238,7 +238,7 @@ util::json::Object makeRoute(const guidance::Route &route,
 util::json::Object makeWaypoint(const util::Coordinate &location,
                                 const double &distance,
                                 std::string name,
-                                const OSMNodeID osm_node_id)
+                                const NodeID osm_node_id)
 {
     util::json::Object waypoint;
     waypoint.values.reserve(3);
@@ -246,14 +246,14 @@ util::json::Object makeWaypoint(const util::Coordinate &location,
     waypoint.values.emplace("location", detail::coordinateToLonLat(location));
     waypoint.values.emplace("name", std::move(name));
     waypoint.values.emplace("distance", distance);
-    waypoint.values.emplace("osm_node_id", tatic_cast<std::uint64_t>(osm_node_id)); // TODO may remove casting
+    waypoint.values.emplace("osm_node_id", osm_node_id);
     return waypoint;
 }
 
 util::json::Object makeWaypoint(const util::Coordinate &location,
                                 const double &distance,
                                 std::string name,
-                                const OSMNodeID osm_node_id,
+                                const NodeID osm_node_id,
                                 const Hint &location_hints)
 {
     auto waypoint = makeWaypoint(location, distance, std::move(name), osm_node_id);
