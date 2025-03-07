@@ -109,6 +109,7 @@ class MockBaseDataFacade : public engine::datafacade::BaseDataFacade
                                const double /*max_distance*/,
                                const std::optional<engine::Bearing> /*bearing*/,
                                const engine::Approach /*approach*/,
+                               const std::optional<int> level,
                                const bool /*use_all_edges*/) const override
     {
         return {};
@@ -119,7 +120,8 @@ class MockBaseDataFacade : public engine::datafacade::BaseDataFacade
                         const size_t /*max_results*/,
                         const std::optional<double> /*max_distance*/,
                         const std::optional<engine::Bearing> /*bearing*/,
-                        const engine::Approach /*approach*/) const override
+                        const engine::Approach, /*approach*/
+                        const std::optional<int> level) const override
     {
         return {};
     };
@@ -129,6 +131,7 @@ class MockBaseDataFacade : public engine::datafacade::BaseDataFacade
         const std::optional<double> /*max_distance*/,
         const std::optional<engine::Bearing> /*bearing*/,
         const engine::Approach /*approach*/,
+        const std::optional<int> level,
         const bool /*use_all_edges*/) const override
     {
         return {};

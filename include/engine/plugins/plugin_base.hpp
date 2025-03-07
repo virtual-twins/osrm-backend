@@ -197,12 +197,15 @@ class BasePlugin
                 continue;
             }
 
+            const int level = (parameters.snapping == api::BaseParameters::SnappingType::Any) ? 0 : *parameters.levels[i];
+
             phantom_nodes[i] = facade.NearestPhantomNodesInRange(
                 parameters.coordinates[i],
                 radiuses[i],
                 use_bearings ? parameters.bearings[i] : std::nullopt,
                 use_approaches && parameters.approaches[i] ? parameters.approaches[i].value()
                                                            : engine::Approach::UNRESTRICTED,
+                level,
                 use_all_edges);
         }
 
@@ -238,13 +241,16 @@ class BasePlugin
                 continue;
             }
 
+            const int level = (parameters.snapping == api::BaseParameters::SnappingType::Any) ? 0 : *parameters.levels[i];
+
             phantom_nodes[i] = facade.NearestPhantomNodes(
                 parameters.coordinates[i],
                 number_of_results,
                 use_radiuses ? parameters.radiuses[i] : default_radius,
                 use_bearings ? parameters.bearings[i] : std::nullopt,
                 use_approaches && parameters.approaches[i] ? parameters.approaches[i].value()
-                                                           : engine::Approach::UNRESTRICTED);
+                                                           : engine::Approach::UNRESTRICTED,
+                level);
 
             // we didn't find a fitting node, return error
             if (phantom_nodes[i].empty())
@@ -281,12 +287,15 @@ class BasePlugin
                 continue;
             }
 
+            const int level = (parameters.snapping == api::BaseParameters::SnappingType::Any) ? 0 : *parameters.levels[i];
+
             alternatives[i] = facade.NearestCandidatesWithAlternativeFromBigComponent(
                 parameters.coordinates[i],
                 use_radiuses ? parameters.radiuses[i] : default_radius,
                 use_bearings ? parameters.bearings[i] : std::nullopt,
                 use_approaches && parameters.approaches[i] ? parameters.approaches[i].value()
                                                            : engine::Approach::UNRESTRICTED,
+                level,
                 use_all_edges);
 
             // we didn't find a fitting node, return error

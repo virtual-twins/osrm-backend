@@ -78,6 +78,7 @@ struct BaseParameters
     std::vector<std::optional<double>> radiuses;
     std::vector<std::optional<Bearing>> bearings;
     std::vector<std::optional<Approach>> approaches;
+    std::vector<std::optional<int>> levels;
     std::vector<std::string> exclude;
     std::optional<OutputFormatType> format = OutputFormatType::JSON;
 
@@ -87,19 +88,20 @@ struct BaseParameters
     // Remove waypoints array from the response.
     bool skip_waypoints = false;
 
-    SnappingType snapping = SnappingType::Default;
+    SnappingType snapping = SnappingType::Any; // TODO change to SnappingType::Default (?)
 
     BaseParameters(std::vector<util::Coordinate> coordinates_ = {},
                    std::vector<std::optional<Hint>> hints_ = {},
                    std::vector<std::optional<double>> radiuses_ = {},
                    std::vector<std::optional<Bearing>> bearings_ = {},
                    std::vector<std::optional<Approach>> approaches_ = {},
+                   std::vector<std::optional<int>> levels_ = {},
                    bool generate_hints_ = true,
                    std::vector<std::string> exclude = {},
-                   const SnappingType snapping_ = SnappingType::Default)
+                   const SnappingType snapping_ = SnappingType::Any)  // TODO change to SnappingType::Default (?)
         : coordinates(std::move(coordinates_)), hints(std::move(hints_)),
           radiuses(std::move(radiuses_)), bearings(std::move(bearings_)),
-          approaches(std::move(approaches_)), exclude(std::move(exclude)),
+          approaches(std::move(approaches_)), levels(std::move(levels_)), exclude(std::move(exclude)),
           generate_hints(generate_hints_), snapping(snapping_)
     {
     }
@@ -110,6 +112,7 @@ struct BaseParameters
                (bearings.empty() || bearings.size() == coordinates.size()) &&
                (radiuses.empty() || radiuses.size() == coordinates.size()) &&
                (approaches.empty() || approaches.size() == coordinates.size()) &&
+               (snapping == SnappingType::Any || levels.size() == coordinates.size()) &&
                std::all_of(bearings.begin(),
                            bearings.end(),
                            [](const std::optional<Bearing> &bearing_and_range)
