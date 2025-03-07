@@ -133,7 +133,14 @@ module.exports = function () {
                     this.requestUrl(row.request, afterRequest);
                 } else {
                     var params = this.queryParams,
-                        waypoints = [];
+                        waypoints = [],
+                        levels = [];
+
+                    if (row.levels) {
+                        got.levels = row.levels;
+                        levels = row.levels.split(' ').filter(b => !!b);
+                    }
+
                     if (row.from && row.to) {
                         var fromNode = this.findNodeByName(row.from);
                         if (!fromNode) throw new Error(util.format('*** unknown from-node "%s"', row.from));
@@ -144,7 +151,7 @@ module.exports = function () {
                         waypoints.push(toNode);
 
                         got = { from: row.from, to: row.to };
-                        this.requestTrip(waypoints, params, afterRequest);
+                        this.requestTrip(waypoints, levels, params, afterRequest);
                     } else if (row.waypoints) {
                         row.waypoints.split(',').forEach((n) => {
                             var node = this.findNodeByName(n);
@@ -165,7 +172,7 @@ module.exports = function () {
                             params.roundtrip = got.roundtrip = row.roundtrip;
                         }
 
-                        this.requestTrip(waypoints, params, afterRequest);
+                        this.requestTrip(waypoints, levels, params, afterRequest);
                     } else {
                         throw new Error('*** no waypoints');
                     }
