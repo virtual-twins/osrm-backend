@@ -111,6 +111,12 @@ struct BaseParametersGrammar : boost::spirit::qi::grammar<Iterator, Signature>
                                                           : std::nullopt);
         };
 
+        const auto add_levels = [](engine::api::BaseParameters &base_parameters,
+                             boost::optional<int> level) {
+            base_parameters.levels.push_back(level ? std::make_optional(*level)
+                                                          : std::nullopt);
+        };
+
         const auto add_radius = [](engine::api::BaseParameters &base_parameters,
                                    boost::optional<double> radius) {
             base_parameters.radiuses.push_back(radius ? std::make_optional(*radius) : std::nullopt);
@@ -178,9 +184,9 @@ struct BaseParametersGrammar : boost::spirit::qi::grammar<Iterator, Signature>
             (-(qi::short_ > ',' > qi::short_))[ph::bind(add_bearing, qi::_r1, qi::_1)] % ';';
 
         // VT specific levels_rule
-        levels_rule = qi::lit("levels=") >
-                                (-qi::int_ %
-                                 ';')[ph::bind(&engine::api::BaseParameters::levels, qi::_r1) = qi::_1];
+        levels_rule =
+            qi::lit("levels=") >
+            (-qi::int_)[ph::bind(add_levels, qi::_r1, qi::_1)] % ';';
 
         approach_type.add("unrestricted", engine::Approach::UNRESTRICTED)(
             "curb", engine::Approach::CURB)("opposite", engine::Approach::OPPOSITE);
