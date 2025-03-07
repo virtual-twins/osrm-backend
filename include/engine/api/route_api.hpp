@@ -210,6 +210,19 @@ class RouteAPI : public BaseAPI
         return json_geometry;
     }
 
+    std::optional<util::json::Value>
+    MakeGeometry(std::optional<std::vector<NodeID>> &&annotations) const
+    {
+        std::optional<util::json::Value> json_geometry;
+        if (annotations)
+        {
+            auto begin = annotations->begin();
+            auto end = annotations->end();
+            json_geometry = json::makeVtGeometry(begin, end);
+        }
+        return json_geometry;
+    }
+
     template <typename ValueType, typename GetFn>
     flatbuffers::Offset<flatbuffers::Vector<ValueType>> GetAnnotations(
         flatbuffers::FlatBufferBuilder &fb_result, guidance::LegGeometry &leg, GetFn Get) const
@@ -721,7 +734,7 @@ class RouteAPI : public BaseAPI
         std::vector<guidance::LegGeometry> &leg_geometries = legs_info.second;
 
         auto route = guidance::assembleRoute(legs);
-        std::optional<util::json::Value> json_overview = MakeGeometry(MakeOverview(leg_geometries));
+        std::optional<util::json::Value> json_overview = MakeGeometry(MakeVtOverview(leg_geometries));
 
         std::vector<util::json::Value> step_geometries;
         const auto total_step_count =
@@ -1011,6 +1024,12 @@ class RouteAPI : public BaseAPI
             overview = guidance::assembleOverview(leg_geometries, use_simplification);
         }
         return overview;
+    }
+
+    std::optional<std::vector<NodeID>>
+    MakeVtOverview(const std::vector<guidance::LegGeometry> &leg_geometries) const
+    {
+        return guidance::assembleVtOverview(leg_geometries);
     }
 };
 
