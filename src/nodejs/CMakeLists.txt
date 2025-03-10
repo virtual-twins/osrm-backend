@@ -1,6 +1,6 @@
 # node-cmake requires CMake 3.1 features; for the osrm project we only
 # require CMake 2.8.11 so that we can build e.g. on Trusty by default.
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.18)
 
 message(STATUS "Building node_osrm")
 
@@ -14,7 +14,7 @@ nodejs_init()
 message(STATUS "Configuring node_osrm bindings for NodeJs ${NODEJS_VERSION}")
 
 add_nodejs_module(node_osrm node_osrm.cpp)
-set_target_properties(node_osrm PROPERTIES CXX_STANDARD 17)
+set_target_properties(node_osrm PROPERTIES CXX_STANDARD 20)
 # TODO: we disable clang-tidy for this target, because it causes errors in third-party NodeJs related headers
 set_target_properties(node_osrm PROPERTIES CXX_CLANG_TIDY "")
 # TODO: we turn off some warnings for this target, because it causes errors in third-party NodeJs related headers
