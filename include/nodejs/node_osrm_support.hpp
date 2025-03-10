@@ -673,7 +673,8 @@ inline bool argumentsToParameter(const Nan::FunctionCallbackInfo<v8::Value> &arg
 
     if (Nan::Has(obj, Nan::New("levels").ToLocalChecked()).FromJust())
     {
-        v8::Local<v8::Value> levels = obj->Get(Nan::New("levels").ToLocalChecked());
+        v8::Local<v8::Value> levels =
+            Nan::Get(obj, Nan::New("levels").ToLocalChecked()).ToLocalChecked();
         if (levels.IsEmpty())
             return false;
 
@@ -701,13 +702,13 @@ inline bool argumentsToParameter(const Nan::FunctionCallbackInfo<v8::Value> &arg
             {
                 params->levels.emplace_back();
             }
-            else if (level->IsNumber())
+            else if (level->IsInt32())
             {
-                params->levels.push_back(static_cast<int>(level->NumberValue()));
+                params->levels.push_back(static_cast<int>(level->Int32Value()));
             }
             else
             {
-                Nan::ThrowError("Level must be a number");
+                Nan::ThrowError("Level must be an integer");
                 return false;
             }
         }
